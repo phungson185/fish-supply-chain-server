@@ -1,11 +1,11 @@
-import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { bufferToHex } from 'ethereumjs-utils';
-import { recoverPersonalSignature } from 'eth-sig-util';
 import { JwtService } from '@nestjs/jwt';
+import { InjectModel } from '@nestjs/mongoose';
+import { recoverPersonalSignature } from 'eth-sig-util';
+import { bufferToHex } from 'ethereumjs-utils';
+import { Model } from 'mongoose';
 
-import { Users, UserDocument } from '../../domain/schemas';
+import { UserDocument, Users } from '../../domain/schemas';
 import { GetTokenDto } from './dtos';
 
 @Injectable()

@@ -11,8 +11,8 @@ const configureSwagger = (app: INestApplication) => {
   const baseApis = '/' + appConfig.baseUrl + globalPrefix;
   const baseUrl = baseApis.replace('//', '/');
   const swaggerDocOptions = new DocumentBuilder()
-    .setTitle('NFT')
-    .setDescription('The NFT API description')
+    .setTitle('Fish Supply Chain API')
+    .setDescription('API for Fish Supply Chain')
     .setVersion('1.0.0')
     .addServer(baseUrl)
     .setBasePath(baseUrl)

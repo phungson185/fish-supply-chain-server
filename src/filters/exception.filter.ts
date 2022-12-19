@@ -21,15 +21,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    (result.success = false),
-      (result.errors = {
-        _: [
-          `${exception.message}`,
-          `statusCode: ${status}`,
-          `timestamp: ${new Date().toISOString()}`,
-          `path: ${request.url}`,
-        ],
-      }),
-      response.status(status).json(result);
+    result.success = false;
+    result.errors = {
+      message: exception.message,
+      statusCode: status,
+      timestamp: new Date().toISOString(),
+      path: request.url,
+    };
+    response.status(status).json(result);
   }
 }

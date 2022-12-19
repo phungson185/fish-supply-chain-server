@@ -1,6 +1,7 @@
 import { AutoMap } from '@automapper/classes';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { Role } from '../enum';
 
 export type UserDocument = Users & Document;
 
@@ -30,16 +31,8 @@ export class Users {
   address: string;
 
   @AutoMap()
-  @Prop({ required: true })
-  username: string;
-
-  @AutoMap()
   @Prop()
   avatar: string;
-
-  @AutoMap()
-  @Prop()
-  cover: string;
 
   @AutoMap()
   @Prop()
@@ -51,23 +44,11 @@ export class Users {
 
   @AutoMap()
   @Prop()
-  userId: string;
-
-  @AutoMap()
-  @Prop()
-  dob?: Date | null;
-
-  @AutoMap()
-  @Prop()
   phone: string;
 
   @AutoMap()
-  @Prop()
-  gender: string;
-
-  @AutoMap()
-  @Prop({ type: Boolean, default: false })
-  isAdmin: boolean;
+  @Prop({ type: String, enum: Role, default: Role.Consumer })
+  role: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(Users);

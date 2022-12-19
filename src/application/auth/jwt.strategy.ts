@@ -1,10 +1,10 @@
-import { Model } from 'mongoose';
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { InjectAppConfig, AppConfiguration } from '../../config/configuration';
-import { Users, UserDocument } from '../../domain/schemas';
+import { PassportStrategy } from '@nestjs/passport';
+import { Model } from 'mongoose';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { AppConfiguration, InjectAppConfig } from '../../config/configuration';
+import { UserDocument, Users } from '../../domain/schemas';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -22,9 +22,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: any): Promise<Users> {
     const { address } = payload;
     const user = await this.userModel.findOne({ address: address }).exec();
-    if(!user) {
+    if (!user) {
       throw new UnauthorizedException();
-    } 
+    }
     return user;
   }
 }

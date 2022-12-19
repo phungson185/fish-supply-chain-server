@@ -1,20 +1,15 @@
 import {
+  Body,
   Controller,
   Get,
+  HttpStatus,
   Post,
   Query,
-  Body,
   Request,
-  UseGuards,
   Response,
-  HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiExtraModels,
-  ApiOkResponse,
-  getSchemaPath,
-} from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { GetNonceDto, GetTokenDto } from './dtos';
 import { JwtAuthGuard } from './jwt-auth.guard';
