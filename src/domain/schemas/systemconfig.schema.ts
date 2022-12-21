@@ -5,7 +5,7 @@ import { Document } from 'mongoose';
 export type SystemConfigDocument = SystemConfig & Document;
 
 @Schema({
-  collection: 'systemconfigs',
+  collection: 'system-configs',
   timestamps: true,
   toJSON: {
     transform: function (doc, ret, options) {

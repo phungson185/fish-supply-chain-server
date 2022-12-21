@@ -4,9 +4,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { recoverPersonalSignature } from 'eth-sig-util';
 import { bufferToHex } from 'ethereumjs-utils';
 import { Model } from 'mongoose';
+import { BaseResult } from 'src/domain/dtos';
 
 import { UserDocument, Users } from '../../domain/schemas';
-import { GetTokenDto } from './dtos';
+import { GetTokenDto, SyncRoleDto } from './dtos';
 
 @Injectable()
 export class AuthService {
@@ -15,18 +16,21 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async getUserByAddress(address: string): Promise<Users> {
+  async getUserByAddress(address: string) {
+    const result = new BaseResult();
+
     const user = await this.userModel.findOne({ address }).exec();
     if (user) {
-      return user;
+      result.data = user;
+      return result;
     }
     const newUser = new this.userModel({
       nonce: Math.floor(Math.random() * 1000000),
       address,
-      username: address,
     });
     await newUser.save();
-    return newUser;
+    result.data = newUser;
+    return result;
   }
 
   verifySignature({
@@ -52,7 +56,8 @@ export class AuthService {
     };
   }
 
-  async generateToken(tokenDto: GetTokenDto): Promise<string | null> {
+  async generateToken(tokenDto: GetTokenDto) {
+    const result = new BaseResult();
     const user = await this.userModel
       .findOne({ address: tokenDto.address })
       .exec();
@@ -66,13 +71,25 @@ export class AuthService {
         address: tokenDto.address,
         sub: user._id.toString(),
       };
-      // update new nonce
       user.nonce = Math.floor(Math.random() * 1000000);
-      console.log(`generate new nonce: ${user.nonce}`);
-      // generate token
       const accessToken = this.jwtService.sign(payload);
-      return accessToken;
+      result.data = accessToken;
+      return result;
     }
     return null;
+  }
+
+  async syncRole(syncRoleDto: SyncRoleDto) {
+    const { address, role } = syncRoleDto;
+    const result = new BaseResult();
+    const user = await this.userModel.findOne({ address }).exec();
+    if (user.role !== role) {
+      user.role = role;
+      await user.save();
+      result.data = user;
+      return result;
+    }
+    result.data = user;
+    return result;
   }
 }
