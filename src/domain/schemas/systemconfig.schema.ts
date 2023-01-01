@@ -19,7 +19,7 @@ export type SystemConfigDocument = SystemConfig & Document;
 export class SystemConfig {
   @AutoMap()
   @Prop()
-  nftContractAddress: string;
+  registrationContract: string;
 }
 
 export const SystemConfigSchema = SchemaFactory.createForClass(SystemConfig);

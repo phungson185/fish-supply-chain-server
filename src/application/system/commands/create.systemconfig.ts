@@ -21,7 +21,7 @@ export class CreateSystemConfigHandler
     async execute(command: CreateSystemConfig): Promise<BaseResult<string>> {
       const result = new BaseResult<string>();
       try {
-        const contract = command.payload.nftContractAddress;
+        const contract = command.payload.registrationContract;
         const item = await this.systemConfigModel.findOne({ contract: contract });
         if(item) {
           throw new BadRequestException(`"${contract}", contract is existed`);    

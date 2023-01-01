@@ -26,8 +26,8 @@ export class UpdateSystemConfigHandler
           throw new BadRequestException(`"${command.id}", id is not exist`);     
         }
 
-        const contract = command.payload.nftContractAddress;
-        const item = await this.systemConfigModel.findOne({ _id: { $ne: command.id }, nftContractAddress: contract });
+        const contract = command.payload.registrationContract;
+        const item = await this.systemConfigModel.findOne({ _id: { $ne: command.id }, registrationContract: contract });
         if(item) {
           throw new BadRequestException(`"${contract}", chainName is existed!`);   
         } 

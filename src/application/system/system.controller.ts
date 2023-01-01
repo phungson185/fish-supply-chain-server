@@ -1,33 +1,35 @@
-import { QueryBus, CommandBus } from '@nestjs/cqrs';
 import {
   Controller,
-  Get,
-  Post,
-  Res,
-  Body,
-  Put,
-  Param,
   Delete,
+  Get,
   HttpStatus,
+  Param,
+  Post,
+  Put,
   Query,
+  Res,
 } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common/decorators';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
-  ApiTags,
-  ApiExtraModels,
-  ApiOkResponse,
+  ApiBearerAuth,
   ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
   getSchemaPath,
 } from '@nestjs/swagger';
-import { SystemConfigDto } from './dtos';
 import { BaseResult } from '../../domain/dtos';
-import { GetSystemConfig } from './queries/get.systemconfig';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateSystemConfig } from './commands/create.systemconfig';
-import { UpdateSystemConfig } from './commands/update.systemconfig';
 import { DeleteSystemConfig } from './commands/delete.systemconfig';
+import { UpdateSystemConfig } from './commands/update.systemconfig';
+import { SystemConfigDto } from './dtos';
+import { GetSystemConfig } from './queries/get.systemconfig';
 
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth('JWT')
 @Controller('system')
 @ApiTags('SystemEndpoints')
-@ApiExtraModels(BaseResult, SystemConfigDto)
 export class SystemController {
   constructor(
     private readonly commandBus: CommandBus,
