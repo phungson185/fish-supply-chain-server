@@ -1,12 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
+import { Max, Min } from 'class-validator';
 export class BaseQueryParams {
   @ApiProperty({ required: false, nullable: true })
   search: string;
+
   @ApiProperty({ required: false })
   page: number = 1;
+
   @ApiProperty({ required: false })
   size: number = 10;
+
   @ApiProperty({ required: false, nullable: true })
   orderBy: string;
 

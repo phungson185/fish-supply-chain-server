@@ -32,10 +32,6 @@ export class FarmedFishs {
   registrationContract: string;
 
   @AutoMap()
-  @Prop({ default: true })
-  enable: boolean;
-
-  @AutoMap()
   @Prop()
   speciesName: string;
 
@@ -45,7 +41,7 @@ export class FarmedFishs {
 
   @AutoMap()
   @Prop()
-  numberOfFishSeedsAvailable: string;
+  numberOfFishSeedsAvailable: number;
 
   @AutoMap()
   @Prop()

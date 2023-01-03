@@ -32,9 +32,9 @@ export class FishSeedCompanyService {
     return result;
   }
 
-  async getFarmedFishContracts(param: BaseQueryParams) {
+  async getFarmedFishContracts(queries: BaseQueryParams) {
     const result = new BaseResult();
-    const { search, page, size, orderBy, desc } = param;
+    const { search, page, size, orderBy, desc } = queries;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<FarmedFishDocument> = {};
     if (search) {
@@ -49,9 +49,6 @@ export class FishSeedCompanyService {
           geographicOrigin: { $regex: search, $options: 'i' },
         },
         {
-          numberOfFishSeedsAvailable: { $regex: search, $options: 'i' },
-        },
-        {
           aquacultureWaterType: { $regex: search, $options: 'i' },
         },
       ];
@@ -59,26 +56,26 @@ export class FishSeedCompanyService {
 
     let sorter = {};
     if (orderBy) {
-      switch (orderBy.toLowerCase()) {
+      switch (orderBy) {
         case 'speciesName':
           sorter = desc
-            ? { name: 'desc', _id: 'desc' }
-            : { name: 'asc', _id: 'asc' };
+            ? { speciesName: 'desc', _id: 'desc' }
+            : { speciesName: 'asc', _id: 'asc' };
           break;
         case 'geographicOrigin':
           sorter = desc
-            ? { tokenId: 'desc', _id: 'desc' }
-            : { tokenId: 'asc', _id: 'asc' };
+            ? { geographicOrigin: 'desc', _id: 'desc' }
+            : { geographicOrigin: 'asc', _id: 'asc' };
           break;
         case 'numberOfFishSeedsAvailable':
           sorter = desc
-            ? { tokenId: 'desc', _id: 'desc' }
-            : { tokenId: 'asc', _id: 'asc' };
+            ? { numberOfFishSeedsAvailable: 'desc', _id: 'desc' }
+            : { numberOfFishSeedsAvailable: 'asc', _id: 'asc' };
           break;
         case 'aquacultureWaterType':
           sorter = desc
-            ? { tokenId: 'desc', _id: 'desc' }
-            : { tokenId: 'asc', _id: 'asc' };
+            ? { aquacultureWaterType: 'desc', _id: 'desc' }
+            : { aquacultureWaterType: 'asc', _id: 'asc' };
           break;
         default:
           sorter = desc
@@ -87,6 +84,7 @@ export class FishSeedCompanyService {
           break;
       }
     }
+    console.log(sorter)
     const items = await this.farmedFishModel
       .find(query)
       .sort(sorter)

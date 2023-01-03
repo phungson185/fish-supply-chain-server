@@ -6,8 +6,10 @@ import {
   Req,
   Res,
   UseGuards,
+  Query,
 } from '@nestjs/common';
-import { Get, Param } from '@nestjs/common/decorators';
+import { Get } from '@nestjs/common/decorators';
+import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { BaseQueryParams } from 'src/domain/dtos';
 import { JwtFishSeedCompanyAuthGuard } from '../auth/jwt-auth.guard';
@@ -39,10 +41,13 @@ export class FishSeedCompanyController {
   }
 
   @Get('contracts')
-  public async GetFarmedFishContracts(@Res() res, @Req() req, @Param() params: BaseQueryParams) {
+  public async GetFarmedFishContracts(
+    @Res() res,
+    @Query() queries: BaseQueryParams,
+  ) {
     try {
       const result = await this.fishSeedCompanyService.getFarmedFishContracts(
-        req.user._id,
+        queries,
       );
       return res.status(HttpStatus.OK).json(result);
     } catch (error) {
