@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Role } from 'src/domain/enum';
+import { RoleType } from 'src/domain/enum';
 
 export class GetNonceDto {
   @ApiProperty({ required: true, nullable: false })
@@ -17,6 +17,6 @@ export class GetTokenDto {
 export class SyncRoleDto {
   address: string;
 
-  @ApiProperty({ required: true, nullable: false, enum: Role })
+  @ApiProperty({ required: true, nullable: false, enum: RoleType })
   role: string;
 }

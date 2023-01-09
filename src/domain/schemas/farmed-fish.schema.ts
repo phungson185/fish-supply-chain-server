@@ -50,6 +50,10 @@ export class FarmedFishs {
   @AutoMap()
   @Prop()
   IPFSHash: string;
+
+  @AutoMap()
+  @Prop({ default: true })
+  available: boolean;
 }
 
 export const FarmedFishSchema = SchemaFactory.createForClass(FarmedFishs);

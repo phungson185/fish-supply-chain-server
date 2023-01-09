@@ -1,19 +1,22 @@
 import {
   Body,
   Controller,
+  Get,
   HttpStatus,
   Post,
+  Put,
+  Query,
   Req,
   Res,
+  Param,
   UseGuards,
-  Query,
 } from '@nestjs/common';
-import { Get } from '@nestjs/common/decorators';
-import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { BaseQueryParams } from 'src/domain/dtos';
 import { JwtFishSeedCompanyAuthGuard } from '../auth/jwt-auth.guard';
 import { FarmedFishContractDto } from './dtos';
+import { BatchDto } from './dtos/batch.dto';
+import { UpdateFarmedFishContractDto } from './dtos/update-farmed-fish-contract.dto';
 import { FishSeedCompanyService } from './fish-seed-company.service';
 
 @UseGuards(JwtFishSeedCompanyAuthGuard)
@@ -49,6 +52,31 @@ export class FishSeedCompanyController {
       const result = await this.fishSeedCompanyService.getFarmedFishContracts(
         queries,
       );
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  // @Put('contract')
+  // public async UpdateFarmedFishContract(
+  //   @Res() res,
+  //   @Body() updateFarmedFishContractDto: UpdateFarmedFishContractDto,
+  // ) {
+  //   try {
+  //     const result = await this.fishSeedCompanyService.updateFarmedFishContract(
+  //       updateFarmedFishContractDto,
+  //     );
+  //     return res.status(HttpStatus.OK).json(result);
+  //   } catch (error) {
+  //     return res.status(HttpStatus.BAD_REQUEST).json(error);
+  //   }
+  // }
+
+  @Post('createBatch')
+  public async CreateBatch(@Res() res, @Body() batchDto: BatchDto) {
+    try {
+      const result = await this.fishSeedCompanyService.createBatch(batchDto);
       return res.status(HttpStatus.OK).json(result);
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json(error);

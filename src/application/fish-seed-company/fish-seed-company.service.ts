@@ -1,17 +1,26 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { QueryBus } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { BaseQueryParams, BaseResult, PaginationDto } from 'src/domain/dtos';
-import { FarmedFishDocument, FarmedFishs } from 'src/domain/schemas';
+import {
+  BatchDocument,
+  Batchs,
+  FarmedFishDocument,
+  FarmedFishs,
+} from 'src/domain/schemas';
 import { GetSystemConfig } from '../system/queries/get.systemconfig';
 import { FarmedFishContractDto } from './dtos';
+import { BatchDto } from './dtos/batch.dto';
+import { UpdateFarmedFishContractDto } from './dtos/update-farmed-fish-contract.dto';
 
 @Injectable()
 export class FishSeedCompanyService {
   constructor(
     @InjectModel(FarmedFishs.name)
     private readonly farmedFishModel: Model<FarmedFishDocument>,
+    @InjectModel(Batchs.name)
+    private readonly batchModel: Model<BatchDocument>,
     private readonly queryBus: QueryBus,
   ) {}
 
@@ -84,15 +93,44 @@ export class FishSeedCompanyService {
           break;
       }
     }
-    console.log(sorter)
     const items = await this.farmedFishModel
       .find(query)
+      .populate('owner')
       .sort(sorter)
       .skip(skipIndex)
       .limit(size);
     const total = await this.farmedFishModel.countDocuments(query);
 
     result.data = new PaginationDto<FarmedFishs>(items, total, page, size);
+    return result;
+  }
+
+  async createBatch(batchDto: BatchDto) {
+    const result = new BaseResult();
+
+    result.data = await this.batchModel.create({
+      ...batchDto,
+    });
+
+    return result;
+  }
+
+  async updateFarmedFishContract(
+    updateFarmedFishContractDto: UpdateFarmedFishContractDto,
+  ) {
+    const result = new BaseResult();
+    const { address, available } = updateFarmedFishContractDto;
+
+    result.data = await this.farmedFishModel.findOneAndUpdate(
+      { address },
+      {
+        $set: {
+          available,
+        },
+      },
+      { new: true },
+    );
+
     return result;
   }
 }

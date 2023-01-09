@@ -61,12 +61,4 @@ export class AuthController {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(err);
     }
   }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  getProfile(@Request() req, @Response() res) {
-    return res
-      .status(HttpStatus.OK)
-      .json({ data: req.user, success: true, errors: [] });
-  }
 }

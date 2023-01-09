@@ -7,8 +7,8 @@ import {
   FarmedFishs,
   FarmedFishSchema,
 } from 'src/domain/schemas';
-import { FishSeedCompanyController } from './fish-seed-company.controller';
-import { FishSeedCompanyService } from './fish-seed-company.service';
+import { BatchController } from './batch..controller';
+import { BatchService } from './batch.service';
 
 @Module({
   imports: [
@@ -18,8 +18,7 @@ import { FishSeedCompanyService } from './fish-seed-company.service';
       { name: Batchs.name, schema: BatchSchema },
     ]),
   ],
-  controllers: [FishSeedCompanyController],
-  providers: [FishSeedCompanyService],
-  exports: [FishSeedCompanyService],
+  controllers: [BatchController],
+  providers: [BatchService],
 })
-export class FishSeedCompanyModule {}
+export class BatchModule {}

@@ -1,4 +1,4 @@
-export enum Role {
+export enum RoleType {
   FDA = 'FDA',
   FishSeedCompany = 'FishSeedCompany',
   FishFarmer = 'FishFarmer',
