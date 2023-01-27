@@ -4,7 +4,7 @@ import * as mongoose from 'mongoose';
 import { Document } from 'mongoose';
 import { BatchType } from '../enum';
 import { FarmedFishs } from './farmed-fish.schema';
-import { Users } from './user.schema';
+import { FishFarmers } from './fish-farmer.schema';
 
 export type BatchDocument = Batchs & Document;
 
@@ -22,12 +22,19 @@ export type BatchDocument = Batchs & Document;
 })
 export class Batchs {
   @AutoMap()
-  @Prop({ required: true })
-  batchContract: string;
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'FarmedFishs',
+    default: null,
+  })
+  farmedFishId: FarmedFishs;
 
   @AutoMap()
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'FarmedFishs', default: null })
-  farmedFishId: FarmedFishs;
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'FishFarmers',
+  })
+  fishFarmerId: FishFarmers;
 
   @AutoMap()
   @Prop({ type: Number, enum: BatchType, required: true })

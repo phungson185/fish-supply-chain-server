@@ -12,7 +12,6 @@ import {
 import { GetSystemConfig } from '../system/queries/get.systemconfig';
 import { FarmedFishContractDto } from './dtos';
 import { BatchDto } from './dtos/batch.dto';
-import { UpdateFarmedFishContractDto } from './dtos/update-farmed-fish-contract.dto';
 
 @Injectable()
 export class FishSeedCompanyService {
@@ -111,25 +110,6 @@ export class FishSeedCompanyService {
     result.data = await this.batchModel.create({
       ...batchDto,
     });
-
-    return result;
-  }
-
-  async updateFarmedFishContract(
-    updateFarmedFishContractDto: UpdateFarmedFishContractDto,
-  ) {
-    const result = new BaseResult();
-    const { address, available } = updateFarmedFishContractDto;
-
-    result.data = await this.farmedFishModel.findOneAndUpdate(
-      { address },
-      {
-        $set: {
-          available,
-        },
-      },
-      { new: true },
-    );
 
     return result;
   }

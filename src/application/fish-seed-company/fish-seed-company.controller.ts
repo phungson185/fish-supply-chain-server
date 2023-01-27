@@ -13,19 +13,22 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { BaseQueryParams } from 'src/domain/dtos';
-import { JwtFishSeedCompanyAuthGuard } from '../auth/jwt-auth.guard';
+import { RoleType } from 'src/domain/enum';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../auth/role.decorator';
+import { RolesGuard } from '../auth/role.guard';
 import { FarmedFishContractDto } from './dtos';
 import { BatchDto } from './dtos/batch.dto';
-import { UpdateFarmedFishContractDto } from './dtos/update-farmed-fish-contract.dto';
 import { FishSeedCompanyService } from './fish-seed-company.service';
 
-@UseGuards(JwtFishSeedCompanyAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth('JWT')
 @Controller('fishseedcompany')
 @ApiTags('FishSeedCompanyEndpoints')
 export class FishSeedCompanyController {
   constructor(private fishSeedCompanyService: FishSeedCompanyService) {}
 
+  @Roles(RoleType.FishSeedCompany)
   @Post('createFarmedFishContract')
   public async CreateFarmedFishContract(
     @Res() res,
@@ -43,6 +46,7 @@ export class FishSeedCompanyController {
     }
   }
 
+  @Roles(RoleType.FishSeedCompany)
   @Get('contracts')
   public async GetFarmedFishContracts(
     @Res() res,
@@ -73,6 +77,7 @@ export class FishSeedCompanyController {
   //   }
   // }
 
+  @Roles(RoleType.FishSeedCompany)
   @Post('createBatch')
   public async CreateBatch(@Res() res, @Body() batchDto: BatchDto) {
     try {

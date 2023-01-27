@@ -1,10 +1,10 @@
 export enum RoleType {
   FDA = 'FDA',
-  FishSeedCompany = 'FishSeedCompany',
-  FishFarmer = 'FishFarmer',
-  FishProcessor = 'FishProcessor',
+  FishSeedCompany = 'Fish Seed Company',
+  FishFarmer = 'Fish Farmer',
+  FishProcessor = 'Fish Processor',
   Distributor = 'Distributor',
   Retailer = 'Retailer',
   Consumer = 'Consumer',
-  WildCaughtFisher = 'WildCaughtFisher',
+  WildCaughtFisher = 'Wild Caught Fisher',
 }

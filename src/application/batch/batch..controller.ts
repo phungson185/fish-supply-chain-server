@@ -13,9 +13,9 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { BatchService } from './batch.service';
 import { BatchQueryDto } from './dtos/batch.query,dto';
 
-// @UseGuards(JwtAuthGuard)
-// @ApiBearerAuth('JWT')
-@Controller('batch')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth('JWT')
+@Controller('batchs')
 @ApiTags('BatchEndpoints')
 export class BatchController {
   constructor(private batchService: BatchService) {}

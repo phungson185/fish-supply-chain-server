@@ -15,7 +15,6 @@ export class BatchService {
   async getBatchs(queries: BatchQueryDto) {
     const result = new BaseResult();
     const { search, page, size, orderBy, desc, type } = queries;
-    console.log(type)
     const skipIndex = size * (page - 1);
     const query: FilterQuery<BatchDocument> = {};
     // if (search) {

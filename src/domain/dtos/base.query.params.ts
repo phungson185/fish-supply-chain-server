@@ -6,9 +6,11 @@ export class BaseQueryParams {
   search: string;
 
   @ApiProperty({ required: false })
+  @Transform((value) => parseInt(value.obj[value.key], 10))
   page: number = 1;
 
   @ApiProperty({ required: false })
+  @Transform((value) => parseInt(value.obj[value.key], 10))
   size: number = 10;
 
   @ApiProperty({ required: false, nullable: true })
