@@ -3,8 +3,16 @@ import { NotFoundException } from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { BaseQueryParams, BaseResult, PaginationDto } from 'src/domain/dtos';
-import { FarmedFishDocument, FarmedFishs, FishFarmerDocument, FishFarmers, UserDocument, Users } from 'src/domain/schemas';
-import { OrderDto } from './dtos';
+import {
+  FarmedFishDocument,
+  FarmedFishs,
+  FishFarmerDocument,
+  FishFarmers,
+  UserDocument,
+  Users,
+} from 'src/domain/schemas';
+import { ConfirmOrderDto, OrderDto } from './dtos';
+import { ProcessStatus } from 'src/domain/enum';
 
 @Injectable()
 export class FishFarmerService {
@@ -35,7 +43,9 @@ export class FishFarmerService {
       throw new NotFoundException('Seller not found');
     }
 
-    const farmedFish = await this.farmedFishModel.findById(orderDto.farmedFishId)
+    const farmedFish = await this.farmedFishModel.findById(
+      orderDto.farmedFishId,
+    );
     if (!farmedFish) {
       throw new NotFoundException('Farmed fish not found');
     }
@@ -89,12 +99,49 @@ export class FishFarmerService {
       .find(query)
       .populate('fishSeedsPurchaser')
       .populate('fishSeedsSeller')
+      .populate('farmedFishId')
       .sort(sorter)
       .skip(skipIndex)
       .limit(size);
     const total = await this.fishFarmerModel.countDocuments(query);
 
     result.data = new PaginationDto<FishFarmers>(items, total, page, size);
+    return result;
+  }
+
+  async confirmOrder(orderId: string, confirmOrderDto: ConfirmOrderDto) {
+    const result = new BaseResult();
+    const { status } = confirmOrderDto;
+
+    const fishFarmer = await this.fishFarmerModel.findById(orderId);
+    if (!fishFarmer) {
+      throw new NotFoundException('Order not found');
+    }
+
+    if (
+      [ProcessStatus.Accepted, ProcessStatus.Received].includes(status) &&
+      fishFarmer.fishSeedsPurchaseOrderDetailsStatus !== ProcessStatus.Pending
+    ) {
+      throw new NotFoundException('Invalid status');
+    }
+
+    if (
+      [ProcessStatus.Received].includes(status) &&
+      fishFarmer.fishSeedsPurchaseOrderDetailsStatus !== ProcessStatus.Accepted
+    ) {
+      throw new NotFoundException('The shipment has not arrived yet');
+    }
+
+    result.data = await this.fishFarmerModel.findByIdAndUpdate(
+      orderId,
+      {
+        $set: {
+          fishSeedsPurchaseOrderDetailsStatus: status,
+        },
+      },
+      { new: true },
+    );
+
     return result;
   }
 }
