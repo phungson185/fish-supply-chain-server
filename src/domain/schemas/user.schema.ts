@@ -19,7 +19,7 @@ export type UserDocument = Users & Document;
 })
 export class Users {
   @AutoMap()
-  @Prop()
+  @Prop({ default: null })
   email: string;
 
   @AutoMap()
@@ -31,15 +31,15 @@ export class Users {
   address: string;
 
   @AutoMap()
-  @Prop()
+  @Prop({ default: 'https://picsum.photos/600/600' })
   avatar: string;
 
   @AutoMap()
-  @Prop()
+  @Prop({ default: 'https://picsum.photos/1500/800' })
   cover: string;
 
   @AutoMap()
-  @Prop()
+  @Prop({ default: null })
   name: string;
 
   @AutoMap()
@@ -47,15 +47,15 @@ export class Users {
   nonce: number;
 
   @AutoMap()
-  @Prop()
+  @Prop({ default: null })
   bio: string;
 
   @AutoMap()
-  @Prop()
+  @Prop({ default: null })
   phone: string;
 
   @AutoMap()
-  @Prop()
+  @Prop({ default: null })
   userAddress: string;
 
   @AutoMap()

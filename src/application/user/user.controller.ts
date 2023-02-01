@@ -1,7 +1,8 @@
 import { Body, Controller, Put, Req, Res } from '@nestjs/common';
-import { UseGuards } from '@nestjs/common/decorators';
+import { Get, UseGuards } from '@nestjs/common/decorators';
 import { HttpStatus } from '@nestjs/common/enums';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { BaseResult } from 'src/domain/dtos';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UpdateProfileDto } from './dtos';
 import { UserService } from './user.service';
@@ -12,6 +13,13 @@ import { UserService } from './user.service';
 @ApiTags('UserEndpoints')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Get()
+  async getProfile(@Res() res, @Req() req) {
+    const result = new BaseResult();
+    result.data = req.user;
+    return res.status(HttpStatus.OK).json(result);
+  }
 
   @Put()
   async updateProfile(
