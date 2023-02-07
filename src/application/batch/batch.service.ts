@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { BaseResult, PaginationDto } from 'src/domain/dtos';
@@ -72,12 +72,56 @@ export class BatchService {
           path: 'owner',
         },
       })
+      .populate({
+        path: 'fishFarmerId',
+        populate: [
+          {
+            path: 'fishSeedsPurchaser',
+          },
+          {
+            path: 'fishSeedsSeller',
+          },
+        ],
+      })
       .sort(sorter)
       .skip(skipIndex)
       .limit(size);
     const total = await this.batchModel.countDocuments(query);
 
     result.data = new PaginationDto<Batchs>(items, total, page, size);
+    return result;
+  }
+
+  async getBatch(id: string) {
+    const result = new BaseResult();
+    const item = await this.batchModel
+      .findById(id)
+      .populate({
+        path: 'farmedFishId',
+        populate: {
+          path: 'owner',
+        },
+      })
+      .populate({
+        path: 'fishFarmerId',
+        populate: [
+          {
+            path: 'fishSeedsPurchaser',
+          },
+          {
+            path: 'fishSeedsSeller',
+          },
+          {
+            path: 'owner',
+          },
+        ],
+      });
+
+    if (!item) {
+      throw new NotFoundException('Batch not found');
+    }
+
+    result.data = item;
     return result;
   }
 }

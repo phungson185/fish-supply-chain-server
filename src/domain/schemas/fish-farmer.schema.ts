@@ -44,6 +44,10 @@ export class FishFarmers {
   @AutoMap()
   @Prop({ enum: ProcessStatus, default: ProcessStatus.Pending })
   fishSeedsPurchaseOrderDetailsStatus: number;
+
+  @AutoMap()
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Users' })
+  owner: Users;
 }
 
 export const FishFarmerSchema = SchemaFactory.createForClass(FishFarmers);

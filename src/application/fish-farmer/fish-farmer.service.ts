@@ -4,6 +4,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { BaseQueryParams, BaseResult, PaginationDto } from 'src/domain/dtos';
 import {
+  BatchDocument,
+  Batchs,
   FarmedFishDocument,
   FarmedFishs,
   FishFarmerDocument,
@@ -12,7 +14,7 @@ import {
   Users,
 } from 'src/domain/schemas';
 import { ConfirmOrderDto, OrderDto } from './dtos';
-import { ProcessStatus } from 'src/domain/enum';
+import { ProcessStatus, BatchType } from 'src/domain/enum';
 
 @Injectable()
 export class FishFarmerService {
@@ -23,6 +25,8 @@ export class FishFarmerService {
     private readonly farmedFishModel: Model<FarmedFishDocument>,
     @InjectModel(Users.name)
     private readonly userModel: Model<UserDocument>,
+    @InjectModel(Batchs.name)
+    private readonly batchModel: Model<BatchDocument>,
   ) {}
 
   async createOrder(orderDto: OrderDto) {
@@ -54,6 +58,7 @@ export class FishFarmerService {
       farmedFishId: farmedFish,
       fishSeedsPurchaser: purcharser,
       fishSeedsSeller: seller,
+      owner: purcharser,
       numberOfFishSeedsOrdered: orderDto.numberOfFishSeedsOrdered,
     });
 
@@ -130,6 +135,14 @@ export class FishFarmerService {
       fishFarmer.fishSeedsPurchaseOrderDetailsStatus !== ProcessStatus.Accepted
     ) {
       throw new NotFoundException('The shipment has not arrived yet');
+    }
+
+    if (status == ProcessStatus.Received) {
+      await this.batchModel.create({
+        farmedFishId: fishFarmer.farmedFishId,
+        fishFarmerId: fishFarmer._id,
+        type: BatchType.FishSeedCompany,
+      });
     }
 
     result.data = await this.fishFarmerModel.findByIdAndUpdate(
