@@ -9,6 +9,7 @@ import {
   UseGuards,
   Param,
   Put,
+  Req,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { BaseQueryParams } from 'src/domain/dtos';
@@ -16,7 +17,11 @@ import { RoleType } from 'src/domain/enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/role.decorator';
 import { RolesGuard } from '../auth/role.guard';
-import { ConfirmOrderDto } from './dtos';
+import {
+  ConfirmOrderDto,
+  QueryOrderParams,
+  UpdateGrowthDetailsDto,
+} from './dtos';
 import { OrderDto } from './dtos/order.dto';
 import { FishFarmerService } from './fish-farmer.service';
 
@@ -40,7 +45,7 @@ export class FishFarmerController {
 
   @Roles(RoleType.FishFarmer, RoleType.FishSeedCompany)
   @Get('orders')
-  public async GetOrders(@Res() res, @Query() queries: BaseQueryParams) {
+  public async GetOrders(@Res() res, @Query() queries: QueryOrderParams) {
     try {
       const result = await this.fishFarmerService.getOrders(queries);
       return res.status(HttpStatus.OK).json(result);
@@ -58,6 +63,26 @@ export class FishFarmerController {
   ) {
     try {
       const result = await this.fishFarmerService.confirmOrder(orderId, body);
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.FishFarmer)
+  @Put('/updateGrowthDetails/:orderId')
+  public async UpdateGrowthDetails(
+    @Res() res,
+    @Req() req,
+    @Param('orderId') orderId: string,
+    @Body() body: UpdateGrowthDetailsDto,
+  ) {
+    try {
+      const result = await this.fishFarmerService.updateGrowthDetails(
+        orderId,
+        req.user.id,
+        body,
+      );
       return res.status(HttpStatus.OK).json(result);
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json(error);

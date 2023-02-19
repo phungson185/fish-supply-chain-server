@@ -46,6 +46,26 @@ export class FishFarmers {
   fishSeedsPurchaseOrderDetailsStatus: number;
 
   @AutoMap()
+  @Prop()
+  totalNumberOfFish: number;
+
+  @AutoMap()
+  @Prop()
+  fishWeight: number;
+
+  @AutoMap()
+  @Prop()
+  speciesName: string;
+
+  @AutoMap()
+  @Prop()
+  IPFSHash: string;
+
+  @AutoMap()
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Users' })
+  updater: Users;
+
+  @AutoMap()
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Users' })
   owner: Users;
 }

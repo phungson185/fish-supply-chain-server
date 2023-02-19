@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
-import { BaseQueryParams, BaseResult, PaginationDto } from 'src/domain/dtos';
+import { BaseResult, PaginationDto } from 'src/domain/dtos';
+import { BatchType, ProcessStatus } from 'src/domain/enum';
 import {
   BatchDocument,
   Batchs,
@@ -13,8 +14,12 @@ import {
   UserDocument,
   Users,
 } from 'src/domain/schemas';
-import { ConfirmOrderDto, OrderDto } from './dtos';
-import { ProcessStatus, BatchType } from 'src/domain/enum';
+import {
+  ConfirmOrderDto,
+  OrderDto,
+  QueryOrderParams,
+  UpdateGrowthDetailsDto,
+} from './dtos';
 
 @Injectable()
 export class FishFarmerService {
@@ -60,6 +65,9 @@ export class FishFarmerService {
       fishSeedsSeller: seller,
       owner: purcharser,
       numberOfFishSeedsOrdered: orderDto.numberOfFishSeedsOrdered,
+      speciesName: farmedFish.speciesName,
+      IPFSHash: farmedFish.IPFSHash,
+      totalNumberOfFish: orderDto.numberOfFishSeedsOrdered,
     });
 
     result.data = await this.fishFarmerModel.create({
@@ -69,9 +77,16 @@ export class FishFarmerService {
     return result;
   }
 
-  async getOrders(queries: BaseQueryParams) {
+  async getOrders(queries: QueryOrderParams) {
     const result = new BaseResult();
-    const { search, page, size, orderBy, desc } = queries;
+    const {
+      search,
+      page,
+      size,
+      orderBy,
+      desc,
+      fishSeedsPurchaseOrderDetailsStatus,
+    } = queries;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<FishFarmerDocument> = {};
     // if (search) {
@@ -93,6 +108,16 @@ export class FishFarmerService {
             ? { speciesName: 'desc', _id: 'desc' }
             : { speciesName: 'asc', _id: 'asc' };
           break;
+        case 'totalNumberOfFish':
+          sorter = desc
+            ? { totalNumberOfFish: 'desc', _id: 'desc' }
+            : { totalNumberOfFish: 'asc', _id: 'asc' };
+          break;
+        case 'fishWeight':
+          sorter = desc
+            ? { fishWeight: 'desc', _id: 'desc' }
+            : { fishWeight: 'asc', _id: 'asc' };
+          break;
         default:
           sorter = desc
             ? { createdAt: 'desc', _id: 'desc' }
@@ -100,11 +125,19 @@ export class FishFarmerService {
           break;
       }
     }
+
+    if (fishSeedsPurchaseOrderDetailsStatus) {
+      query.fishSeedsPurchaseOrderDetailsStatus =
+        fishSeedsPurchaseOrderDetailsStatus;
+    }
+
     const items = await this.fishFarmerModel
       .find(query)
       .populate('fishSeedsPurchaser')
       .populate('fishSeedsSeller')
       .populate('farmedFishId')
+      .populate('owner')
+      .populate('updater')
       .sort(sorter)
       .skip(skipIndex)
       .limit(size);
@@ -150,6 +183,39 @@ export class FishFarmerService {
       {
         $set: {
           fishSeedsPurchaseOrderDetailsStatus: status,
+        },
+      },
+      { new: true },
+    );
+
+    return result;
+  }
+
+  async updateGrowthDetails(orderId: string, userId: string, body: UpdateGrowthDetailsDto) {
+    const result = new BaseResult();
+    const { IPFSHash, fishWeight, speciesName, totalNumberOfFish } = body;
+
+    const growthDetail = await this.fishFarmerModel.findById(orderId);
+    if (!growthDetail) {
+      throw new NotFoundException('Order not found');
+    }
+
+    if (
+      growthDetail.fishSeedsPurchaseOrderDetailsStatus !==
+      ProcessStatus.Received
+    ) {
+      throw new NotFoundException('Invalid status');
+    }
+
+    result.data = await this.fishFarmerModel.findByIdAndUpdate(
+      orderId,
+      {
+        $set: {
+          IPFSHash,
+          fishWeight,
+          speciesName,
+          totalNumberOfFish,
+          updater: userId,
         },
       },
       { new: true },
