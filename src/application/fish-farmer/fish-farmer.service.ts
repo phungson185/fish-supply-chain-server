@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { NotFoundException } from '@nestjs/common/exceptions';
+import { BadRequestException, NotFoundException } from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { BaseResult, PaginationDto } from 'src/domain/dtos';
@@ -157,17 +157,17 @@ export class FishFarmerService {
     }
 
     if (
-      [ProcessStatus.Accepted, ProcessStatus.Received].includes(status) &&
+      [ProcessStatus.Accepted, ProcessStatus.Rejected].includes(status) &&
       fishFarmer.fishSeedsPurchaseOrderDetailsStatus !== ProcessStatus.Pending
     ) {
-      throw new NotFoundException('Invalid status');
+      throw new BadRequestException('Invalid status');
     }
 
     if (
       [ProcessStatus.Received].includes(status) &&
       fishFarmer.fishSeedsPurchaseOrderDetailsStatus !== ProcessStatus.Accepted
     ) {
-      throw new NotFoundException('The shipment has not arrived yet');
+      throw new BadRequestException('The shipment has not arrived yet');
     }
 
     if (status == ProcessStatus.Received) {
@@ -204,7 +204,7 @@ export class FishFarmerService {
       growthDetail.fishSeedsPurchaseOrderDetailsStatus !==
       ProcessStatus.Received
     ) {
-      throw new NotFoundException('Invalid status');
+      throw new BadRequestException('Invalid status');
     }
 
     result.data = await this.fishFarmerModel.findByIdAndUpdate(

@@ -5,6 +5,7 @@ import { Document } from 'mongoose';
 import { BatchType } from '../enum';
 import { FarmedFishs } from './farmed-fish.schema';
 import { FishFarmers } from './fish-farmer.schema';
+import { FishProcessors } from './fish-processor.schema';
 
 export type BatchDocument = Batchs & Document;
 
@@ -35,6 +36,13 @@ export class Batchs {
     ref: 'FishFarmers',
   })
   fishFarmerId: FishFarmers;
+
+  @AutoMap()
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'FishProcessors',
+  })
+  fishProcessorId: FishProcessors;
 
   @AutoMap()
   @Prop({ type: Number, enum: BatchType, required: true })

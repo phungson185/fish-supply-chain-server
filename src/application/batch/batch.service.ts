@@ -81,6 +81,20 @@ export class BatchService {
           {
             path: 'fishSeedsSeller',
           },
+          {
+            path: 'owner',
+          },
+          {
+            path: 'updater',
+          },
+        ],
+      })
+      .populate({
+        path: 'fishProcessorId',
+        populate: [
+          {
+            path: 'owner',
+          },
         ],
       })
       .sort(sorter)
@@ -111,6 +125,17 @@ export class BatchService {
           {
             path: 'fishSeedsSeller',
           },
+          {
+            path: 'owner',
+          },
+          {
+            path: 'updater',
+          },
+        ],
+      })
+      .populate({
+        path: 'fishProcessorId',
+        populate: [
           {
             path: 'owner',
           },
