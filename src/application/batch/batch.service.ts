@@ -95,6 +95,9 @@ export class BatchService {
           {
             path: 'owner',
           },
+          {
+            path: 'fishProcessor'
+          }
         ],
       })
       .sort(sorter)
@@ -139,6 +142,9 @@ export class BatchService {
           {
             path: 'owner',
           },
+          {
+            path: 'fishProcessor'
+          }
         ],
       });
 

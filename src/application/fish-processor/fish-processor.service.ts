@@ -193,6 +193,7 @@ export class FishProcessorService {
       catchMethod,
       filletsInPacket,
       processingContract,
+      numberOfPackets,
     } = body;
 
     const fishhProcessor = await this.userModel.findOne({
@@ -220,6 +221,7 @@ export class FishProcessorService {
         filletsInPacket,
         processingContract,
         status: ProcessStatus.Proccessed,
+        numberOfPackets,
       },
     });
 

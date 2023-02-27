@@ -23,5 +23,8 @@ export class CreateProcessingContractDto {
   filletsInPacket: number;
 
   @ApiProperty()
+  numberOfPackets: number;
+
+  @ApiProperty()
   processingContract: string;
 }

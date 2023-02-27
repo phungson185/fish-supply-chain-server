@@ -79,6 +79,10 @@ export class FishProcessors {
 
   @AutoMap()
   @Prop()
+  numberOfPackets: number;
+
+  @AutoMap()
+  @Prop()
   processingContract: string;
 }
 
