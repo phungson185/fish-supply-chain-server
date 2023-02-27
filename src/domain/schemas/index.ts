@@ -5,3 +5,4 @@ export * from './batch.schema';
 export * from './fish-farmer.schema';
 export * from './fish-processor.schema';
 export * from './distributor.schema';
+export * from './retailer.schema';

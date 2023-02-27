@@ -7,6 +7,7 @@ import { Distributors } from './distributor.schema';
 import { FarmedFishs } from './farmed-fish.schema';
 import { FishFarmers } from './fish-farmer.schema';
 import { FishProcessors } from './fish-processor.schema';
+import { Retailers } from './retailer.schema';
 
 export type BatchDocument = Batchs & Document;
 
@@ -51,6 +52,13 @@ export class Batchs {
     ref: 'Distributors',
   })
   distributorId: Distributors;
+
+  @AutoMap()
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Retailers',
+  })
+  retailerId: Retailers;
 
   @AutoMap()
   @Prop({ type: Number, enum: BatchType, required: true })

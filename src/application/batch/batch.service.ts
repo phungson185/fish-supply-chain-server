@@ -106,6 +106,17 @@ export class BatchService {
           {
             path: 'owner',
           },
+          {
+            path: 'processorId',
+          },
+        ],
+      })
+      .populate({
+        path: 'retailerId',
+        populate: [
+          {
+            path: 'owner',
+          },
         ],
       })
       .sort(sorter)
@@ -157,6 +168,17 @@ export class BatchService {
       })
       .populate({
         path: 'distributorId',
+        populate: [
+          {
+            path: 'owner',
+          },
+          {
+            path: 'processorId',
+          },
+        ],
+      })
+      .populate({
+        path: 'retailerId',
         populate: [
           {
             path: 'owner',
