@@ -3,6 +3,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 import { Document } from 'mongoose';
 import { BatchType } from '../enum';
+import { Distributors } from './distributor.schema';
 import { FarmedFishs } from './farmed-fish.schema';
 import { FishFarmers } from './fish-farmer.schema';
 import { FishProcessors } from './fish-processor.schema';
@@ -43,6 +44,13 @@ export class Batchs {
     ref: 'FishProcessors',
   })
   fishProcessorId: FishProcessors;
+
+  @AutoMap()
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Distributors',
+  })
+  distributorId: Distributors;
 
   @AutoMap()
   @Prop({ type: Number, enum: BatchType, required: true })

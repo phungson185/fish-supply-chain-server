@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { BatchModule } from './batch/batch.module';
+import { DistributorModule } from './distributor/distributor.module';
 import { FishFarmerModule } from './fish-farmer/fish-farmer.module';
 import { FishProcessorModule } from './fish-processor/fish-processor.module';
 import { FishSeedCompanyModule } from './fish-seed-company/fish-seed-company.module';
@@ -16,6 +17,7 @@ import { UserModule } from './user/user.module';
     BatchModule,
     FishFarmerModule,
     FishProcessorModule,
+    DistributorModule,
   ],
 })
 export class ApplicationModule {}
