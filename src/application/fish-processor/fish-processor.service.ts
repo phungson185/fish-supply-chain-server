@@ -5,13 +5,11 @@ import {
 } from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
-import { BaseResult, PaginationDto } from 'src/domain/dtos';
+import { BaseQueryParams, BaseResult, PaginationDto } from 'src/domain/dtos';
 import { BatchType, ProcessStatus } from 'src/domain/enum';
 import {
   BatchDocument,
   Batchs,
-  FarmedFishDocument,
-  FarmedFishs,
   FishFarmerDocument,
   FishFarmers,
   FishProcessorDocument,
@@ -19,7 +17,12 @@ import {
   UserDocument,
   Users,
 } from 'src/domain/schemas';
-import { ConfirmOrderDto, OrderDto, QueryOrderParams } from './dtos';
+import {
+  ConfirmOrderDto,
+  CreateProcessingContractDto,
+  OrderDto,
+  QueryOrderParams,
+} from './dtos';
 
 @Injectable()
 export class FishProcessorService {
@@ -166,15 +169,6 @@ export class FishProcessorService {
       throw new BadRequestException('The shipment has not arrived yet');
     }
 
-    if (status == ProcessStatus.Received) {
-      await this.batchModel.create({
-        farmedFishId: fishProcessor.fishFarmerId.farmedFishId,
-        fishFarmerId: fishProcessor.fishFarmerId,
-        fishProcessorId: fishProcessor,
-        type: BatchType.FishSeedCompany,
-      });
-    }
-
     result.data = await this.fishProcessorModel.findByIdAndUpdate(
       orderId,
       {
@@ -184,6 +178,57 @@ export class FishProcessorService {
       },
       { new: true },
     );
+
+    return result;
+  }
+
+  async createProcessingContract(body: CreateProcessingContractDto) {
+    const result = new BaseResult<FishProcessors>();
+    const {
+      orderId,
+      IPFSHash,
+      dateOfProcessing,
+      fishProcessor,
+      registrationContract,
+      catchMethod,
+      filletsInPacket,
+      processingContract,
+    } = body;
+
+    const fishhProcessor = await this.userModel.findOne({
+      address: fishProcessor,
+    });
+
+    if (!fishhProcessor) {
+      throw new NotFoundException('Fish processor not found');
+    }
+
+    const order = await this.fishProcessorModel
+      .findById(orderId)
+      .populate('fishFarmerId');
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    result.data = await this.fishProcessorModel.findByIdAndUpdate(orderId, {
+      $set: {
+        IPFSHash,
+        dateOfProcessing,
+        fishProcessor: fishhProcessor,
+        registrationContract,
+        catchMethod,
+        filletsInPacket,
+        processingContract,
+        status: ProcessStatus.Proccessed,
+      },
+    });
+
+    await this.batchModel.create({
+      fishProcessorId: order,
+      fishFarmerId: order.fishFarmerId,
+      farmedFishId: order.fishFarmerId.farmedFishId,
+      type: BatchType.FishSeedCompany,
+    });
 
     return result;
   }

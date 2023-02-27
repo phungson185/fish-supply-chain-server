@@ -5,4 +5,5 @@ export enum ProcessStatus {
   Arrived = 3,
   Received = 4,
   Updated = 5,
+  Proccessed = 6,
 }

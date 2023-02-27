@@ -33,7 +33,6 @@ export class FishProcessors {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Users' })
   farmedFishSeller: Users;
 
-  
   @AutoMap()
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Users' })
   owner: Users;
@@ -53,6 +52,34 @@ export class FishProcessors {
   @AutoMap()
   @Prop({ enum: ProcessStatus, default: ProcessStatus.Pending })
   status: number;
+
+  @AutoMap()
+  @Prop()
+  registrationContract: string;
+
+  @AutoMap()
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Users' })
+  fishProcessor: Users;
+
+  @AutoMap()
+  @Prop()
+  IPFSHash: string;
+
+  @AutoMap()
+  @Prop()
+  dateOfProcessing: Date;
+
+  @AutoMap()
+  @Prop()
+  catchMethod: string;
+
+  @AutoMap()
+  @Prop()
+  filletsInPacket: number;
+
+  @AutoMap()
+  @Prop()
+  processingContract: string;
 }
 
 export const FishProcessorSchema = SchemaFactory.createForClass(FishProcessors);

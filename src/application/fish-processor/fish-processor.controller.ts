@@ -11,11 +11,17 @@ import {
   Param,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { BaseQueryParams } from 'src/domain/dtos';
 import { RoleType } from 'src/domain/enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/role.decorator';
 import { RolesGuard } from '../auth/role.guard';
-import { ConfirmOrderDto, OrderDto, QueryOrderParams } from './dtos';
+import {
+  ConfirmOrderDto,
+  CreateProcessingContractDto,
+  OrderDto,
+  QueryOrderParams,
+} from './dtos';
 import { FishProcessorService } from './fish-processor.service';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -26,7 +32,7 @@ export class FishProcessorController {
   constructor(private fishProcessorService: FishProcessorService) {}
 
   @Roles(RoleType.FishProcessor)
-  @Post('order')
+  @Post('orders')
   public async CreateOrder(@Res() res, @Body() orderDto: OrderDto) {
     try {
       const result = await this.fishProcessorService.createOrder(orderDto);
@@ -55,7 +61,26 @@ export class FishProcessorController {
     @Body() body: ConfirmOrderDto,
   ) {
     try {
-      const result = await this.fishProcessorService.confirmOrder(orderId, body);
+      const result = await this.fishProcessorService.confirmOrder(
+        orderId,
+        body,
+      );
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.FishProcessor)
+  @Post('/createProcessingContract')
+  public async CreateProcessingContract(
+    @Res() res,
+    @Body() body: CreateProcessingContractDto,
+  ) {
+    try {
+      const result = await this.fishProcessorService.createProcessingContract(
+        body,
+      );
       return res.status(HttpStatus.OK).json(result);
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json(error);
