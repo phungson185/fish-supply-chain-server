@@ -6,6 +6,8 @@ import {
   BatchSchema,
   FarmedFishs,
   FarmedFishSchema,
+  FishSeed,
+  FishSeedSchema,
   Users,
   UserSchema,
 } from 'src/domain/schemas';
@@ -19,6 +21,7 @@ import { FishSeedCompanyService } from './fish-seed-company.service';
       { name: FarmedFishs.name, schema: FarmedFishSchema },
       { name: Batchs.name, schema: BatchSchema },
       { name: Users.name, schema: UserSchema },
+      { name: FishSeed.name, schema: FishSeedSchema },
     ]),
   ],
   controllers: [FishSeedCompanyController],

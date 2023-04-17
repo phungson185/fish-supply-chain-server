@@ -8,9 +8,11 @@ import {
   Batchs,
   FarmedFishDocument,
   FarmedFishs,
+  FishSeed,
+  FishSeedDocument,
 } from 'src/domain/schemas';
 import { GetSystemConfig } from '../system/queries/get.systemconfig';
-import { FarmedFishContractDto } from './dtos';
+import { AddFishSeedDto, FarmedFishContractDto, QueryFishSeed } from './dtos';
 import { BatchDto } from './dtos/batch.dto';
 
 @Injectable()
@@ -20,6 +22,8 @@ export class FishSeedCompanyService {
     private readonly farmedFishModel: Model<FarmedFishDocument>,
     @InjectModel(Batchs.name)
     private readonly batchModel: Model<BatchDocument>,
+    @InjectModel(FishSeed.name)
+    private readonly fishSeedModel: Model<FishSeedDocument>,
     private readonly queryBus: QueryBus,
   ) {}
 
@@ -110,6 +114,75 @@ export class FishSeedCompanyService {
     result.data = await this.batchModel.create({
       ...batchDto,
     });
+
+    return result;
+  }
+
+  async addFishSeed(addFishSeedDto: AddFishSeedDto) {
+    const result = new BaseResult();
+
+    result.data = this.fishSeedModel.create({
+      ...addFishSeedDto,
+    });
+
+    return result;
+  }
+
+  async getFishSeeds(queries: QueryFishSeed) {
+    const result = new BaseResult();
+    const { search, page, size, orderBy, desc } = queries;
+    const skipIndex = size * (page - 1);
+    const query: FilterQuery<FishSeedDocument> = {};
+    if (search) {
+    }
+
+    let sorter = {};
+    if (orderBy) {
+    }
+    const items = await this.fishSeedModel
+      .find(query)
+      .sort(sorter)
+      .skip(skipIndex)
+      .limit(size);
+    const total = await this.fishSeedModel.countDocuments(query);
+
+    result.data = new PaginationDto<FishSeed>(items, total, page, size);
+    return result;
+  }
+
+  async getFishSeed(id: string) {
+    const result = new BaseResult();
+    const item = await this.fishSeedModel.findById(id);
+
+    if (!item) {
+      throw new NotFoundException('Fish seed not found');
+    }
+
+    result.data = item;
+    return result;
+  }
+
+  async updateFishSeed(id: string, updateFishSeedDto: AddFishSeedDto) {
+    const result = new BaseResult();
+
+    const item = await this.fishSeedModel.findById(id);
+
+    if (!item) {
+      throw new NotFoundException('Fish seed not found');
+    }
+
+    result.data = await this.fishSeedModel.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          ...updateFishSeedDto,
+        },
+      },
+      {
+        new: true,
+        upsert: true,
+      },
+    );
 
     return result;
   }

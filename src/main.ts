@@ -47,7 +47,7 @@ const bootstrap = async () => {
   const app = await NestFactory.create(AppModule);
   const appConfig = app.get<AppConfiguration>(appConfiguration.KEY);
   app.setGlobalPrefix(globalPrefix);
-  if(appConfig.isOpenSwagger) {
+  if (appConfig.isOpenSwagger) {
     configureSwagger(app);
   }
   configureValidation(app);

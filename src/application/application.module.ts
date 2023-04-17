@@ -8,6 +8,7 @@ import { FishSeedCompanyModule } from './fish-seed-company/fish-seed-company.mod
 import { RetailerModule } from './retailer/retailer.module';
 import { SystemModule } from './system/system.module';
 import { UserModule } from './user/user.module';
+import { UploadModule } from 'src/upload/upload.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { UserModule } from './user/user.module';
     FishProcessorModule,
     DistributorModule,
     RetailerModule,
+    UploadModule,
   ],
 })
 export class ApplicationModule {}

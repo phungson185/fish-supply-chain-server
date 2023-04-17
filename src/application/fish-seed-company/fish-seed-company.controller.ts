@@ -10,6 +10,7 @@ import {
   Res,
   Param,
   UseGuards,
+  Patch,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { BaseQueryParams } from 'src/domain/dtos';
@@ -17,7 +18,7 @@ import { RoleType } from 'src/domain/enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/role.decorator';
 import { RolesGuard } from '../auth/role.guard';
-import { FarmedFishContractDto } from './dtos';
+import { AddFishSeedDto, FarmedFishContractDto, QueryFishSeed } from './dtos';
 import { BatchDto } from './dtos/batch.dto';
 import { FishSeedCompanyService } from './fish-seed-company.service';
 
@@ -62,26 +63,65 @@ export class FishSeedCompanyController {
     }
   }
 
-  // @Put('contract')
-  // public async UpdateFarmedFishContract(
-  //   @Res() res,
-  //   @Body() updateFarmedFishContractDto: UpdateFarmedFishContractDto,
-  // ) {
-  //   try {
-  //     const result = await this.fishSeedCompanyService.updateFarmedFishContract(
-  //       updateFarmedFishContractDto,
-  //     );
-  //     return res.status(HttpStatus.OK).json(result);
-  //   } catch (error) {
-  //     return res.status(HttpStatus.BAD_REQUEST).json(error);
-  //   }
-  // }
-
   @Roles(RoleType.FishSeedCompany)
   @Post('createBatch')
   public async CreateBatch(@Res() res, @Body() batchDto: BatchDto) {
     try {
       const result = await this.fishSeedCompanyService.createBatch(batchDto);
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.FishSeedCompany)
+  @Get('getFishSeeds')
+  public async getFishSeeds(@Res() res, @Query() queries: QueryFishSeed) {
+    try {
+      const result = await this.fishSeedCompanyService.getFishSeeds(queries);
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.FishSeedCompany)
+  @Get('getFishSeed/:id')
+  public async getFishSeed(@Res() res, @Req() req, @Param('id') id: string) {
+    try {
+      const result = await this.fishSeedCompanyService.getFishSeed(id);
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.FishSeedCompany)
+  @Post('addFishSeed')
+  public async addFishSeed(@Res() res, @Body() addFishSeedDto: AddFishSeedDto) {
+    try {
+      const result = await this.fishSeedCompanyService.addFishSeed(
+        addFishSeedDto,
+      );
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.FishSeedCompany)
+  @Put('updateFishSeed/:id')
+  public async updateFishSeed(
+    @Res() res,
+    @Req() req,
+    @Param('id') id: string,
+    @Body() addFishSeedDto: AddFishSeedDto,
+  ) {
+    try {
+      const result = await this.fishSeedCompanyService.updateFishSeed(
+        id,
+        addFishSeedDto,
+      );
       return res.status(HttpStatus.OK).json(result);
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json(error);
