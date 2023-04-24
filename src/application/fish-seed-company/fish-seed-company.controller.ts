@@ -121,6 +121,7 @@ export class FishSeedCompanyController {
       const result = await this.fishSeedCompanyService.updateFishSeed(
         id,
         addFishSeedDto,
+        req.user._id,
       );
       return res.status(HttpStatus.OK).json(result);
     } catch (error) {

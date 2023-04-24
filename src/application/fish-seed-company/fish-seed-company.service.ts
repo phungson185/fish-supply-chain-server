@@ -10,10 +10,16 @@ import {
   FarmedFishs,
   FishSeed,
   FishSeedDocument,
+  Log,
+  LogDocument,
+  UserDocument,
+  Users,
 } from 'src/domain/schemas';
 import { GetSystemConfig } from '../system/queries/get.systemconfig';
 import { AddFishSeedDto, FarmedFishContractDto, QueryFishSeed } from './dtos';
 import { BatchDto } from './dtos/batch.dto';
+import { TransactionType } from 'src/domain/enum/transactionType';
+import { LogType } from 'src/domain/enum';
 
 @Injectable()
 export class FishSeedCompanyService {
@@ -24,6 +30,10 @@ export class FishSeedCompanyService {
     private readonly batchModel: Model<BatchDocument>,
     @InjectModel(FishSeed.name)
     private readonly fishSeedModel: Model<FishSeedDocument>,
+    @InjectModel(Log.name)
+    private readonly logModel: Model<LogDocument>,
+    @InjectModel(Users.name)
+    private readonly userModel: Model<UserDocument>,
     private readonly queryBus: QueryBus,
   ) {}
 
@@ -33,6 +43,32 @@ export class FishSeedCompanyService {
     if (!systemconfig) {
       throw new NotFoundException('System config not found');
     }
+
+    const feedSeed = await this.fishSeedModel.findById(
+      farmedFishContractDto.fishSeedId,
+    );
+
+    if (!feedSeed) {
+      throw new NotFoundException('Fish seed not found');
+    }
+
+    feedSeed.quantity -= farmedFishContractDto.numberOfFishSeedsAvailable;
+
+    if (feedSeed.quantity === 0) {
+      feedSeed.isMakeContract = true;
+    }
+    await feedSeed.save();
+
+    await this.logModel.create({
+      objectId: farmedFishContractDto.farmedFishContract,
+      owner: farmedFishContractDto.owner,
+      transactionType: TransactionType.DEPLOY,
+      logType: LogType.BLOCKCHAIN,
+      message: `Deploy ${farmedFishContractDto.numberOfFishSeedsAvailable}kg fish seed with contract ${farmedFishContractDto.farmedFishContract}`,
+      oldData: '',
+      newData: farmedFishContractDto,
+      title: 'Deploy fish seed',
+    });
 
     farmedFishContractDto.registrationContract =
       systemconfig.registrationContract;
@@ -84,10 +120,15 @@ export class FishSeedCompanyService {
             ? { numberOfFishSeedsAvailable: 'desc', _id: 'desc' }
             : { numberOfFishSeedsAvailable: 'asc', _id: 'asc' };
           break;
-        case 'aquacultureWaterType':
+        case 'methodOfReproduction':
           sorter = desc
-            ? { aquacultureWaterType: 'desc', _id: 'desc' }
-            : { aquacultureWaterType: 'asc', _id: 'asc' };
+            ? { methodOfReproduction: 'desc', _id: 'desc' }
+            : { methodOfReproduction: 'asc', _id: 'asc' };
+          break;
+        case 'waterTemperature':
+          sorter = desc
+            ? { waterTemperature: 'desc', _id: 'desc' }
+            : { waterTemperature: 'asc', _id: 'asc' };
           break;
         default:
           sorter = desc
@@ -162,13 +203,42 @@ export class FishSeedCompanyService {
     return result;
   }
 
-  async updateFishSeed(id: string, updateFishSeedDto: AddFishSeedDto) {
+  async updateFishSeed(
+    id: string,
+    updateFishSeedDto: AddFishSeedDto,
+    userId: string,
+  ) {
     const result = new BaseResult();
 
     const item = await this.fishSeedModel.findById(id);
-
     if (!item) {
       throw new NotFoundException('Fish seed not found');
+    }
+
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    let isDifferent = false;
+
+    Object.keys(updateFishSeedDto).forEach((key) => {
+      if (item[key] !== updateFishSeedDto[key]) {
+        isDifferent = true;
+      }
+    });
+
+    if (isDifferent) {
+      await this.logModel.create({
+        objectId: item.id,
+        owner: userId,
+        transactionType: TransactionType.UPDATE,
+        logType: LogType.API,
+        message: `Updated fish seed ${item.speciesName}`,
+        oldData: item,
+        newData: updateFishSeedDto,
+        title: 'Update fish seed',
+      });
     }
 
     result.data = await this.fishSeedModel.findByIdAndUpdate(

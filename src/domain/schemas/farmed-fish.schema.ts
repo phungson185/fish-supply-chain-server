@@ -3,6 +3,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 import { Document } from 'mongoose';
 import { Users } from './user.schema';
+import { GeographicOrigin, MethodOfReproduction } from '../enum';
 
 export type FarmedFishDocument = FarmedFishs & Document;
 
@@ -37,19 +38,27 @@ export class FarmedFishs {
 
   @AutoMap()
   @Prop()
-  geographicOrigin: string;
-
-  @AutoMap()
-  @Prop()
   numberOfFishSeedsAvailable: number;
 
   @AutoMap()
   @Prop()
-  aquacultureWaterType: string;
+  images: string[];
+
+  @AutoMap()
+  @Prop()
+  waterTemperature: number;
 
   @AutoMap()
   @Prop()
   IPFSHash: string;
+
+  @AutoMap()
+  @Prop({ enum: GeographicOrigin })
+  geographicOrigin: number;
+
+  @AutoMap()
+  @Prop({ enum: MethodOfReproduction })
+  methodOfReproduction: number;
 }
 
 export const FarmedFishSchema = SchemaFactory.createForClass(FarmedFishs);

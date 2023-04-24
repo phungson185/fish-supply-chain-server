@@ -9,6 +9,7 @@ import { RetailerModule } from './retailer/retailer.module';
 import { SystemModule } from './system/system.module';
 import { UserModule } from './user/user.module';
 import { UploadModule } from 'src/upload/upload.module';
+import { LogModule } from './log/log.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UploadModule } from 'src/upload/upload.module';
     DistributorModule,
     RetailerModule,
     UploadModule,
+    LogModule,
   ],
 })
 export class ApplicationModule {}

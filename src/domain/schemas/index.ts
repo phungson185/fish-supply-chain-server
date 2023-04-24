@@ -7,3 +7,4 @@ export * from './fish-processor.schema';
 export * from './distributor.schema';
 export * from './retailer.schema';
 export * from './fish-seed.schema';
+export * from './log.schema';

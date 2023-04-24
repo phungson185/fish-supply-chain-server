@@ -7,16 +7,25 @@ export class FarmedFishContractDto {
   farmedFishContract: string;
 
   @ApiProperty()
+  fishSeedId: string;
+
+  @ApiProperty()
   speciesName: string;
 
   @ApiProperty()
-  geographicOrigin: string;
+  geographicOrigin: number;
 
   @ApiProperty()
-  numberOfFishSeedsAvailable: string;
+  numberOfFishSeedsAvailable: number;
 
   @ApiProperty()
-  aquacultureWaterType: string;
+  methodOfReproduction: number;
+
+  @ApiProperty()
+  images: string;
+
+  @ApiProperty()
+  waterTemperature: number;
 
   @ApiProperty()
   IPFSHash: string;

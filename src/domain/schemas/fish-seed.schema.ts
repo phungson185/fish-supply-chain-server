@@ -57,6 +57,10 @@ export class FishSeed {
   @AutoMap()
   @Prop()
   IPFSHash: string;
+
+  @AutoMap()
+  @Prop({ default: false })
+  isMakeContract: boolean;
 }
 
 export const FishSeedSchema = SchemaFactory.createForClass(FishSeed);
