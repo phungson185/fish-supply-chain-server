@@ -18,7 +18,12 @@ import { RoleType } from 'src/domain/enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/role.decorator';
 import { RolesGuard } from '../auth/role.guard';
-import { AddFishSeedDto, FarmedFishContractDto, QueryFishSeed } from './dtos';
+import {
+  AddFishSeedDto,
+  FarmedFishContractDto,
+  QueryFishSeed,
+  UpdateFarmedFishContractDto,
+} from './dtos';
 import { BatchDto } from './dtos/batch.dto';
 import { FishSeedCompanyService } from './fish-seed-company.service';
 
@@ -56,6 +61,37 @@ export class FishSeedCompanyController {
     try {
       const result = await this.fishSeedCompanyService.getFarmedFishContracts(
         queries,
+      );
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.FishSeedCompany)
+  @Get('contract/:id')
+  public async GetFarmedFishContract(@Res() res, @Param('id') id: string) {
+    try {
+      const result = await this.fishSeedCompanyService.getFarmedFishContract(
+        id,
+      );
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.FishSeedCompany)
+  @Put('contract/:id')
+  public async UpdateFarmedFishContract(
+    @Res() res,
+    @Param('id') id: string,
+    @Body() updateFarmedFishContractDto: UpdateFarmedFishContractDto,
+  ) {
+    try {
+      const result = await this.fishSeedCompanyService.updateFarmedFishContract(
+        id,
+        updateFarmedFishContractDto,
       );
       return res.status(HttpStatus.OK).json(result);
     } catch (error) {

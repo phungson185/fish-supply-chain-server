@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { LogService } from './log.service';
 import { BaseQueryParams } from 'src/domain/dtos';
+import { LogsQueryParamDto } from './dtos/logsQueryParam.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('JWT')
@@ -15,7 +16,7 @@ export class LogController {
   public async GetLogs(
     @Res() res,
     @Req() req,
-    @Query() queries: BaseQueryParams,
+    @Query() queries: LogsQueryParamDto,
   ) {
     try {
       const result = await this.logSerive.getLogs(req.user._id, queries);

@@ -16,7 +16,12 @@ import {
   Users,
 } from 'src/domain/schemas';
 import { GetSystemConfig } from '../system/queries/get.systemconfig';
-import { AddFishSeedDto, FarmedFishContractDto, QueryFishSeed } from './dtos';
+import {
+  AddFishSeedDto,
+  FarmedFishContractDto,
+  QueryFishSeed,
+  UpdateFarmedFishContractDto,
+} from './dtos';
 import { BatchDto } from './dtos/batch.dto';
 import { TransactionType } from 'src/domain/enum/transactionType';
 import { LogType } from 'src/domain/enum';
@@ -130,6 +135,10 @@ export class FishSeedCompanyService {
             ? { waterTemperature: 'desc', _id: 'desc' }
             : { waterTemperature: 'asc', _id: 'asc' };
           break;
+        case 'updatedAt':
+          sorter = desc
+            ? { updatedAt: 'desc', _id: 'desc' }
+            : { updatedAt: 'asc', _id: 'asc' };
         default:
           sorter = desc
             ? { createdAt: 'desc', _id: 'desc' }
@@ -146,6 +155,53 @@ export class FishSeedCompanyService {
     const total = await this.farmedFishModel.countDocuments(query);
 
     result.data = new PaginationDto<FarmedFishs>(items, total, page, size);
+    return result;
+  }
+
+  async getFarmedFishContract(id: string) {
+    const result = new BaseResult();
+
+    result.data = await this.farmedFishModel.findById(id).populate('owner');
+
+    return result;
+  }
+
+  async updateFarmedFishContract(
+    id: string,
+    updateFarmedFishContractDto: UpdateFarmedFishContractDto,
+  ) {
+    const result = new BaseResult();
+
+    const farmedFish = await this.farmedFishModel.findById(id);
+
+    if (!farmedFish) {
+      throw new NotFoundException('Farmed fish contract not found');
+    }
+    let isDifferent = false;
+    Object.keys(updateFarmedFishContractDto).forEach((key) => {
+      if (farmedFish[key] !== updateFarmedFishContractDto[key]) {
+        isDifferent = true;
+      }
+    });
+
+    if (isDifferent) {
+      await this.logModel.create({
+        objectId: farmedFish.farmedFishContract,
+        transactionHash: updateFarmedFishContractDto.transactionHash,
+        owner: farmedFish.owner,
+        transactionType: TransactionType.UPDATE,
+        logType: LogType.BLOCKCHAIN,
+        message: `Update farmed fish contract ${farmedFish.farmedFishContract}`,
+        oldData: farmedFish,
+        newData: updateFarmedFishContractDto,
+        title: 'Update farmed fish contract',
+      });
+    }
+
+    result.data = await this.farmedFishModel.findByIdAndUpdate(id, {
+      ...updateFarmedFishContractDto,
+    });
+
     return result;
   }
 

@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { BaseQueryParams, BaseResult, PaginationDto } from 'src/domain/dtos';
 import { Log, LogDocument } from 'src/domain/schemas';
+import { LogsQueryParamDto } from './dtos/logsQueryParam.dto';
 
 @Injectable()
 export class LogService {
@@ -11,12 +12,13 @@ export class LogService {
     private readonly logModel: Model<LogDocument>,
   ) {}
 
-  async getLogs(userId: string, baseQueryParams: BaseQueryParams) {
+  async getLogs(userId: string, logsQueryParamDto: LogsQueryParamDto) {
     const result = new BaseResult();
-    const { search, page, size, orderBy, desc } = baseQueryParams;
+    const { search, page, size, orderBy, desc, objectId } = logsQueryParamDto;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<LogDocument> = {};
     query.owner = userId;
+    if (objectId) query.objectId = objectId;
     // if (search) {
     //   query.$or = [
     //     {
