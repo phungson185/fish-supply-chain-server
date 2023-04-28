@@ -8,7 +8,6 @@ import { FishSeedCompanyModule } from './fish-seed-company/fish-seed-company.mod
 import { RetailerModule } from './retailer/retailer.module';
 import { SystemModule } from './system/system.module';
 import { UserModule } from './user/user.module';
-import { UploadModule } from 'src/upload/upload.module';
 import { LogModule } from './log/log.module';
 
 @Module({
@@ -22,7 +21,6 @@ import { LogModule } from './log/log.module';
     FishProcessorModule,
     DistributorModule,
     RetailerModule,
-    UploadModule,
     LogModule,
   ],
 })
