@@ -49,20 +49,20 @@ export class FishSeedCompanyService {
       throw new NotFoundException('System config not found');
     }
 
-    const feedSeed = await this.fishSeedModel.findById(
+    const fishSeed = await this.fishSeedModel.findById(
       farmedFishContractDto.fishSeedId,
     );
 
-    if (!feedSeed) {
+    if (!fishSeed) {
       throw new NotFoundException('Fish seed not found');
     }
 
-    feedSeed.quantity -= farmedFishContractDto.numberOfFishSeedsAvailable;
+    fishSeed.quantity -= farmedFishContractDto.numberOfFishSeedsAvailable;
 
-    if (feedSeed.quantity === 0) {
-      feedSeed.isMakeContract = true;
+    if (fishSeed.quantity === 0) {
+      fishSeed.isMakeContract = true;
     }
-    await feedSeed.save();
+    await fishSeed.save();
 
     await this.logModel.create({
       objectId: farmedFishContractDto.farmedFishContract,
