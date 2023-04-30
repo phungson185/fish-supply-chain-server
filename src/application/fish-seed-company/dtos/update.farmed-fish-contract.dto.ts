@@ -17,7 +17,7 @@ export class UpdateFarmedFishContractDto {
   methodOfReproduction: number;
 
   @ApiProperty()
-  images: string;
+  image: string;
 
   @ApiProperty()
   waterTemperature: number;

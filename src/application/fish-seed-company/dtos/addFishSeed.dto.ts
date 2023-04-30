@@ -36,7 +36,7 @@ export class AddFishSeedDto {
 
   @AutoMap()
   @ApiProperty()
-  images: string[];
+  image: string;
 
   @AutoMap()
   @ApiProperty()

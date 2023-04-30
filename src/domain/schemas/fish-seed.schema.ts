@@ -16,6 +16,15 @@ export type FishSeedDocument = FishSeed & Document;
       return ret;
     },
   },
+  toObject: {
+    transform: function (doc, ret, options) {
+      delete ret._id;
+      delete ret.__v;
+      delete ret.createdAt;
+      delete ret.updatedAt;
+      return ret;
+    },
+  },
 })
 export class FishSeed {
   @AutoMap()
@@ -52,7 +61,7 @@ export class FishSeed {
 
   @AutoMap()
   @Prop()
-  images: string[];
+  image: string;
 
   @AutoMap()
   @Prop()

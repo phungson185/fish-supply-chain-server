@@ -18,6 +18,15 @@ export type FarmedFishDocument = FarmedFishs & Document;
       return ret;
     },
   },
+  toObject: {
+    transform: function (doc, ret, options) {
+      delete ret._id;
+      delete ret.__v;
+      delete ret.createdAt;
+      delete ret.updatedAt;
+      return ret;
+    },
+  },
 })
 export class FarmedFishs {
   @AutoMap()
@@ -42,7 +51,7 @@ export class FarmedFishs {
 
   @AutoMap()
   @Prop()
-  images: string[];
+  image: string;
 
   @AutoMap()
   @Prop()

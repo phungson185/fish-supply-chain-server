@@ -25,6 +25,7 @@ import {
 import { BatchDto } from './dtos/batch.dto';
 import { TransactionType } from 'src/domain/enum/transactionType';
 import { LogType } from 'src/domain/enum';
+import { compareObjects } from 'src/utils/compareObjects';
 
 @Injectable()
 export class FishSeedCompanyService {
@@ -64,14 +65,16 @@ export class FishSeedCompanyService {
     }
     await fishSeed.save();
 
+    const { oldData, newData } = compareObjects({}, farmedFishContractDto);
+
     await this.logModel.create({
       objectId: farmedFishContractDto.farmedFishContract,
       owner: farmedFishContractDto.owner,
       transactionType: TransactionType.DEPLOY,
       logType: LogType.BLOCKCHAIN,
       message: `Deploy ${farmedFishContractDto.numberOfFishSeedsAvailable}kg fish seed with contract ${farmedFishContractDto.farmedFishContract}`,
-      oldData: '',
-      newData: farmedFishContractDto,
+      oldData: oldData,
+      newData: newData,
       title: 'Deploy fish seed',
     });
 
@@ -185,6 +188,11 @@ export class FishSeedCompanyService {
     });
 
     if (isDifferent) {
+      const { oldData, newData } = compareObjects(
+        farmedFish.toObject(),
+        updateFarmedFishContractDto,
+      );
+
       await this.logModel.create({
         objectId: farmedFish.farmedFishContract,
         transactionHash: updateFarmedFishContractDto.transactionHash,
@@ -192,8 +200,8 @@ export class FishSeedCompanyService {
         transactionType: TransactionType.UPDATE,
         logType: LogType.BLOCKCHAIN,
         message: `Update farmed fish contract ${farmedFish.farmedFishContract}`,
-        oldData: farmedFish,
-        newData: updateFarmedFishContractDto,
+        oldData,
+        newData,
         title: 'Update farmed fish contract',
       });
     }
@@ -285,14 +293,19 @@ export class FishSeedCompanyService {
     });
 
     if (isDifferent) {
+      const { oldData, newData } = compareObjects(
+        item.toObject(),
+        updateFishSeedDto,
+      );
+
       await this.logModel.create({
         objectId: item.id,
         owner: userId,
         transactionType: TransactionType.UPDATE,
         logType: LogType.API,
         message: `Updated fish seed ${item.speciesName}`,
-        oldData: item,
-        newData: updateFishSeedDto,
+        oldData,
+        newData,
         title: 'Update fish seed',
       });
     }

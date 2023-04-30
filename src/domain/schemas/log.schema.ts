@@ -38,12 +38,12 @@ export class Log {
   owner: Users;
 
   @AutoMap()
-  @Prop({ type: Object })
-  oldData: Object;
+  @Prop()
+  oldData: string;
 
   @AutoMap()
-  @Prop({ type: Object })
-  newData: Object;
+  @Prop()
+  newData: string;
 
   @AutoMap()
   @Prop()
