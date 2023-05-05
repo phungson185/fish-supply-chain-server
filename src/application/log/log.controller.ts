@@ -1,8 +1,15 @@
-import { Controller, Get, Query, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+  HttpStatus,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { LogService } from './log.service';
-import { BaseQueryParams } from 'src/domain/dtos';
 import { LogsQueryParamDto } from './dtos/logsQueryParam.dto';
 
 @UseGuards(JwtAuthGuard)
@@ -20,9 +27,9 @@ export class LogController {
   ) {
     try {
       const result = await this.logSerive.getLogs(req.user._id, queries);
-      return res.status(200).json(result);
+      return res.status(HttpStatus.OK).json(result);
     } catch (error) {
-      return res.status(400).json(error);
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
     }
   }
 }

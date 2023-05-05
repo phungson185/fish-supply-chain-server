@@ -17,7 +17,6 @@ export class LogService {
     const { search, page, size, orderBy, desc, objectId } = logsQueryParamDto;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<LogDocument> = {};
-    query.owner = userId;
     if (objectId) query.objectId = objectId;
     // if (search) {
     //   query.$or = [

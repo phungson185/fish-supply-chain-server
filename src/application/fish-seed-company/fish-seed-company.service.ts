@@ -25,7 +25,7 @@ import {
 import { BatchDto } from './dtos/batch.dto';
 import { TransactionType } from 'src/domain/enum/transactionType';
 import { LogType } from 'src/domain/enum';
-import { compareObjects } from 'src/utils/compareObjects';
+import { compareObjects } from 'src/utils/utils';
 
 @Injectable()
 export class FishSeedCompanyService {

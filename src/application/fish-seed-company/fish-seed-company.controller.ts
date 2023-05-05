@@ -68,7 +68,7 @@ export class FishSeedCompanyController {
     }
   }
 
-  @Roles(RoleType.FishSeedCompany)
+  @Roles(RoleType.FishSeedCompany, RoleType.FishFarmer)
   @Get('contract/:id')
   public async GetFarmedFishContract(@Res() res, @Param('id') id: string) {
     try {
