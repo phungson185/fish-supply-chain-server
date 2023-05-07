@@ -5,6 +5,7 @@ import { Document } from 'mongoose';
 import { ProcessStatus } from '../enum/processStatus';
 import { FarmedFishs } from './farmed-fish.schema';
 import { Users } from './user.schema';
+import { GeographicOrigin, MethodOfReproduction } from '../enum';
 
 export type FishFarmerDocument = FishFarmers & Document;
 
@@ -58,6 +59,18 @@ export class FishFarmers {
   speciesName: string;
 
   @AutoMap()
+  @Prop({ enum: GeographicOrigin })
+  geographicOrigin: number;
+
+  @AutoMap()
+  @Prop({ enum: MethodOfReproduction })
+  methodOfReproduction: number;
+
+  @AutoMap()
+  @Prop()
+  waterTemperature: number;
+
+  @AutoMap()
   @Prop()
   IPFSHash: string;
 
@@ -68,6 +81,10 @@ export class FishFarmers {
   @AutoMap()
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Users' })
   owner: Users;
+
+  @AutoMap()
+  @Prop()
+  image: string;
 }
 
 export const FishFarmerSchema = SchemaFactory.createForClass(FishFarmers);

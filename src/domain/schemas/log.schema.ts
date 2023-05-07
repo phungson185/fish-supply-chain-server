@@ -2,7 +2,7 @@ import { AutoMap } from '@automapper/classes';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 import { Document } from 'mongoose';
-import { GeographicOrigin } from '../enum';
+import { GeographicOrigin, LogType } from '../enum';
 import { Users } from './user.schema';
 import { TransactionType } from '../enum/transactionType';
 
@@ -54,7 +54,7 @@ export class Log {
   message: string;
 
   @AutoMap()
-  @Prop({ enum: TransactionType })
+  @Prop({ enum: LogType })
   logType: number;
 }
 

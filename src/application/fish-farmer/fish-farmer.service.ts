@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { BadRequestException, NotFoundException } from '@nestjs/common/exceptions';
+import {
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { BaseResult, PaginationDto } from 'src/domain/dtos';
-import { BatchType, ProcessStatus } from 'src/domain/enum';
+import { BatchType, ProcessStatus, TransactionType } from 'src/domain/enum';
 import {
   BatchDocument,
   Batchs,
@@ -11,6 +14,8 @@ import {
   FarmedFishs,
   FishFarmerDocument,
   FishFarmers,
+  Log,
+  LogDocument,
   UserDocument,
   Users,
 } from 'src/domain/schemas';
@@ -32,11 +37,20 @@ export class FishFarmerService {
     private readonly userModel: Model<UserDocument>,
     @InjectModel(Batchs.name)
     private readonly batchModel: Model<BatchDocument>,
+    @InjectModel(Log.name)
+    private readonly logModel: Model<LogDocument>,
   ) {}
 
   async createOrder(orderDto: OrderDto) {
     const result = new BaseResult();
-    const { fishSeedsPurchaser, fishSeedsSeller } = orderDto;
+    const {
+      fishSeedsPurchaser,
+      fishSeedsSeller,
+      farmedFishId,
+      fishSeedPurchaseOrderId,
+      fishSeedsPurchaseOrderDetailsStatus,
+      numberOfFishSeedsOrdered,
+    } = orderDto;
 
     const purcharser = await this.userModel.findOne({
       address: fishSeedsPurchaser,
@@ -65,6 +79,10 @@ export class FishFarmerService {
       fishSeedsSeller: seller,
       owner: purcharser,
       numberOfFishSeedsOrdered: orderDto.numberOfFishSeedsOrdered,
+      geographicOrigin: farmedFish.geographicOrigin,
+      methodOfReproduction: farmedFish.methodOfReproduction,
+      waterTemperature: farmedFish.waterTemperature,
+      image: farmedFish.image,
       speciesName: farmedFish.speciesName,
       IPFSHash: farmedFish.IPFSHash,
       totalNumberOfFish: orderDto.numberOfFishSeedsOrdered,
@@ -73,6 +91,14 @@ export class FishFarmerService {
     result.data = await this.fishFarmerModel.create({
       ...orderDto,
     });
+
+    if ((result.data as any)._id) {
+      await this.logModel.create({
+        objectId: (result.data as any)._id,
+        transactionType: TransactionType.UPDATE_ORDER_STATUS,
+        newData: ProcessStatus.Pending,
+      });
+    }
 
     return result;
   }
@@ -138,7 +164,7 @@ export class FishFarmerService {
       .populate('farmedFishId')
       .populate('owner')
       .populate('updater')
-      .sort(sorter)
+      .sort({ createdAt: 'desc', _id: 'desc' })
       .skip(skipIndex)
       .limit(size);
     const total = await this.fishFarmerModel.countDocuments(query);
@@ -178,6 +204,12 @@ export class FishFarmerService {
       });
     }
 
+    await this.logModel.create({
+      objectId: orderId,
+      transactionType: TransactionType.UPDATE_ORDER_STATUS,
+      newData: status,
+    });
+
     result.data = await this.fishFarmerModel.findByIdAndUpdate(
       orderId,
       {
@@ -191,7 +223,11 @@ export class FishFarmerService {
     return result;
   }
 
-  async updateGrowthDetails(orderId: string, userId: string, body: UpdateGrowthDetailsDto) {
+  async updateGrowthDetails(
+    orderId: string,
+    userId: string,
+    body: UpdateGrowthDetailsDto,
+  ) {
     const result = new BaseResult();
     const { IPFSHash, fishWeight, speciesName, totalNumberOfFish } = body;
 

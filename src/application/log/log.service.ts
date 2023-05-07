@@ -14,10 +14,12 @@ export class LogService {
 
   async getLogs(userId: string, logsQueryParamDto: LogsQueryParamDto) {
     const result = new BaseResult();
-    const { search, page, size, orderBy, desc, objectId } = logsQueryParamDto;
+    const { search, page, size, orderBy, desc, objectId, transactionType } =
+      logsQueryParamDto;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<LogDocument> = {};
     if (objectId) query.objectId = objectId;
+    if (transactionType) query.transactionType = transactionType;
     // if (search) {
     //   query.$or = [
     //     {

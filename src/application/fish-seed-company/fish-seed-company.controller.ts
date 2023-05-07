@@ -81,7 +81,7 @@ export class FishSeedCompanyController {
     }
   }
 
-  @Roles(RoleType.FishSeedCompany)
+  @Roles(RoleType.FishSeedCompany, RoleType.FishFarmer)
   @Put('contract/:id')
   public async UpdateFarmedFishContract(
     @Res() res,
