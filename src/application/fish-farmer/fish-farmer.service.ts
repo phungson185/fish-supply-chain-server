@@ -153,6 +153,7 @@ export class FishFarmerService {
     }
 
     if (fishSeedsPurchaseOrderDetailsStatus) {
+      console.log(fishSeedsPurchaseOrderDetailsStatus);
       query.fishSeedsPurchaseOrderDetailsStatus =
         fishSeedsPurchaseOrderDetailsStatus;
     }
@@ -175,7 +176,7 @@ export class FishFarmerService {
 
   async confirmOrder(orderId: string, confirmOrderDto: ConfirmOrderDto) {
     const result = new BaseResult();
-    const { status } = confirmOrderDto;
+    const { status, numberOfFishSeedsAvailable } = confirmOrderDto;
 
     const fishFarmer = await this.fishFarmerModel.findById(orderId);
     if (!fishFarmer) {
@@ -209,6 +210,16 @@ export class FishFarmerService {
       transactionType: TransactionType.UPDATE_ORDER_STATUS,
       newData: status,
     });
+
+    await this.farmedFishModel.findByIdAndUpdate(
+      fishFarmer.farmedFishId,
+      {
+        $set: {
+          numberOfFishSeedsAvailable,
+        },
+      },
+      { new: true },
+    );
 
     result.data = await this.fishFarmerModel.findByIdAndUpdate(
       orderId,
