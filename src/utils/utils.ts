@@ -1,4 +1,7 @@
 const keyMap = {
+  title: 'Title',
+  subTitle: 'Sub title',
+  description: 'Description',
   farmedFishContract: 'Farmed fish contract',
   fishSeedId: 'Fish seed ID',
   speciesName: 'Species name',
@@ -9,6 +12,8 @@ const keyMap = {
   image: 'Image',
   IPFSHash: 'IPFS hash',
   owner: 'Owner',
+  fishWeight: 'Fish weight',
+  totalNumberOfFish: 'Total number of fish',
 };
 
 export const handleMapGeographicOrigin = (geographicOrigin: number) => {

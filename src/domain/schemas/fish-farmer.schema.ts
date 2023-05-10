@@ -20,6 +20,15 @@ export type FishFarmerDocument = FishFarmers & Document;
       return ret;
     },
   },
+  toObject: {
+    transform: function (doc, ret, options) {
+      delete ret._id;
+      delete ret.__v;
+      delete ret.createdAt;
+      delete ret.updatedAt;
+      return ret;
+    },
+  },
 })
 export class FishFarmers {
   @AutoMap()

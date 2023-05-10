@@ -6,7 +6,7 @@ import { GeographicOrigin, MethodOfReproduction } from '../enum';
 export type FishSeedDocument = FishSeed & Document;
 
 @Schema({
-  collection: 'fish-seed',
+  collection: 'fish-seeds',
   timestamps: true,
   toJSON: {
     transform: function (doc, ret, options) {

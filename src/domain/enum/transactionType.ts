@@ -1,5 +1,6 @@
 export enum TransactionType {
-  UPDATE = 0,
-  DEPLOY = 1,
+  UPDATE_FISH_SEED = 0,
+  DEPLOY_CONTRACT = 1,
   UPDATE_ORDER_STATUS = 2,
+  UPDATE_FISH_GROWTH = 3,
 }

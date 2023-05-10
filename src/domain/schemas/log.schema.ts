@@ -9,7 +9,7 @@ import { TransactionType } from '../enum/transactionType';
 export type LogDocument = Log & Document;
 
 @Schema({
-  collection: 'log',
+  collection: 'logs',
   timestamps: true,
   toJSON: {
     transform: function (doc, ret, options) {

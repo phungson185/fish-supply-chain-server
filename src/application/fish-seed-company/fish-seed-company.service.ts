@@ -70,7 +70,7 @@ export class FishSeedCompanyService {
     await this.logModel.create({
       objectId: farmedFishContractDto.farmedFishContract,
       owner: farmedFishContractDto.owner,
-      transactionType: TransactionType.DEPLOY,
+      transactionType: TransactionType.DEPLOY_CONTRACT,
       logType: LogType.BLOCKCHAIN,
       message: `Deploy ${farmedFishContractDto.numberOfFishSeedsAvailable}kg fish seed with contract ${farmedFishContractDto.farmedFishContract}`,
       oldData: oldData,
@@ -182,7 +182,10 @@ export class FishSeedCompanyService {
     }
     let isDifferent = false;
     Object.keys(updateFarmedFishContractDto).forEach((key) => {
-      if (farmedFish[key] !== updateFarmedFishContractDto[key]) {
+      if (
+        farmedFish[key] !== updateFarmedFishContractDto[key] &&
+        key !== 'transactionHash'
+      ) {
         isDifferent = true;
       }
     });
@@ -197,7 +200,7 @@ export class FishSeedCompanyService {
         objectId: farmedFish.farmedFishContract,
         transactionHash: updateFarmedFishContractDto.transactionHash,
         owner: farmedFish.owner,
-        transactionType: TransactionType.UPDATE,
+        transactionType: TransactionType.UPDATE_FISH_SEED,
         logType: LogType.BLOCKCHAIN,
         message: `Update farmed fish contract ${farmedFish.farmedFishContract}`,
         oldData,
@@ -287,7 +290,7 @@ export class FishSeedCompanyService {
     let isDifferent = false;
 
     Object.keys(updateFishSeedDto).forEach((key) => {
-      if (item[key] !== updateFishSeedDto[key]) {
+      if (item[key] !== updateFishSeedDto[key] && key !== 'transactionHash') {
         isDifferent = true;
       }
     });
@@ -301,7 +304,7 @@ export class FishSeedCompanyService {
       await this.logModel.create({
         objectId: item.id,
         owner: userId,
-        transactionType: TransactionType.UPDATE,
+        transactionType: TransactionType.UPDATE_FISH_SEED,
         logType: LogType.API,
         message: `Updated fish seed ${item.speciesName}`,
         oldData,

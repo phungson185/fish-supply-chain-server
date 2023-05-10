@@ -54,6 +54,17 @@ export class FishFarmerController {
     }
   }
 
+  @Roles(RoleType.FishFarmer)
+  @Get('order/:id')
+  public async GetOrder(@Res() res, @Param('id') id: string) {
+    try {
+      const result = await this.fishFarmerService.getOrder(id);
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
   @Roles(RoleType.FishFarmer, RoleType.FishSeedCompany)
   @Put('/orders/:orderId/confirm')
   public async ConfirmOrder(

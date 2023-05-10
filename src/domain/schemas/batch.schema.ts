@@ -12,7 +12,7 @@ import { Retailers } from './retailer.schema';
 export type BatchDocument = Batchs & Document;
 
 @Schema({
-  collection: 'batchs',
+  collection: 'batches',
   timestamps: true,
   toJSON: {
     transform: function (doc, ret, options) {
