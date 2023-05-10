@@ -73,7 +73,10 @@ export class AuthService {
       };
       user.nonce = Math.floor(Math.random() * 1000000);
       const accessToken = this.jwtService.sign(payload);
-      result.data = accessToken;
+      result.data = {
+        accessToken,
+        id: user._id,
+      };
       return result;
     }
     return null;

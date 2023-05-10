@@ -112,19 +112,18 @@ export class FishFarmerService {
       orderBy,
       desc,
       fishSeedsPurchaseOrderDetailsStatus,
+      fishSeedsPurchaser,
+      fishSeedsSeller,
     } = queries;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<FishFarmerDocument> = {};
-    // if (search) {
-    //   query.$or = [
-    //     {
-    //       fishSeedsPurchaser: { $regex: search, $options: 'i' },
-    //     },
-    //     {
-    //       fishSeedsSeller: { $regex: search, $options: 'i' },
-    //     },
-    //   ];
-    // }
+    if (search) {
+      query.$or = [
+        {
+          speciesName: { $regex: search, $options: 'i' },
+        },
+      ];
+    }
 
     let sorter = {};
     if (orderBy) {
@@ -134,28 +133,32 @@ export class FishFarmerService {
             ? { speciesName: 'desc', _id: 'desc' }
             : { speciesName: 'asc', _id: 'asc' };
           break;
-        case 'totalNumberOfFish':
+
+        case 'updatedAt':
           sorter = desc
-            ? { totalNumberOfFish: 'desc', _id: 'desc' }
-            : { totalNumberOfFish: 'asc', _id: 'asc' };
+            ? { updatedAt: 'desc', _id: 'desc' }
+            : { updatedAt: 'asc', _id: 'asc' };
           break;
-        case 'fishWeight':
-          sorter = desc
-            ? { fishWeight: 'desc', _id: 'desc' }
-            : { fishWeight: 'asc', _id: 'asc' };
-          break;
+
         default:
           sorter = desc
-            ? { createdAt: 'desc', _id: 'desc' }
-            : { createdAt: 'asc', _id: 'asc' };
+            ? { updatedAt: 'desc', _id: 'desc' }
+            : { updatedAt: 'asc', _id: 'asc' };
           break;
       }
     }
 
     if (fishSeedsPurchaseOrderDetailsStatus) {
-      console.log(fishSeedsPurchaseOrderDetailsStatus);
       query.fishSeedsPurchaseOrderDetailsStatus =
         fishSeedsPurchaseOrderDetailsStatus;
+    }
+
+    if (fishSeedsPurchaser) {
+      query.fishSeedsPurchaser = fishSeedsPurchaser;
+    }
+
+    if (fishSeedsSeller) {
+      query.fishSeedsSeller = fishSeedsSeller;
     }
 
     const items = await this.fishFarmerModel
