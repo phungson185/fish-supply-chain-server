@@ -6,7 +6,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { BaseQueryParams, BaseResult, PaginationDto } from 'src/domain/dtos';
-import { BatchType, ProcessStatus } from 'src/domain/enum';
+import { BatchType, ProcessStatus, TransactionType } from 'src/domain/enum';
 import {
   BatchDocument,
   Batchs,
@@ -14,6 +14,8 @@ import {
   FishFarmers,
   FishProcessorDocument,
   FishProcessors,
+  Log,
+  LogDocument,
   UserDocument,
   Users,
 } from 'src/domain/schemas';
@@ -35,6 +37,8 @@ export class FishProcessorService {
     private readonly fishProcessorModel: Model<FishProcessorDocument>,
     @InjectModel(Batchs.name)
     private readonly batchModel: Model<BatchDocument>,
+    @InjectModel(Log.name)
+    private readonly logModel: Model<LogDocument>,
   ) {}
 
   async createOrder(orderDto: OrderDto) {
@@ -45,6 +49,11 @@ export class FishProcessorService {
       fishFarmerId,
       numberOfFishOrdered,
       speciesName,
+      IPFSHash,
+      farmedFishPurchaseOrderID,
+      geographicOrigin,
+      image,
+      methodOfReproduction,
     } = orderDto;
 
     const purcharser = await this.userModel.findOne({
@@ -73,11 +82,24 @@ export class FishProcessorService {
       speciesName,
       numberOfFishOrdered,
       owner: purcharser,
+      IPFSHash,
+      farmedFishPurchaseOrderID,
+      geographicOrigin,
+      image,
+      methodOfReproduction,
     });
 
     result.data = await this.fishProcessorModel.create({
       ...orderDto,
     });
+
+    if ((result.data as any)._id) {
+      await this.logModel.create({
+        objectId: (result.data as any)._id,
+        transactionType: TransactionType.UPDATE_ORDER_STATUS,
+        newData: ProcessStatus.Pending,
+      });
+    }
 
     return result;
   }

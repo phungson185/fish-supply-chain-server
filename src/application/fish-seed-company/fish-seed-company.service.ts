@@ -25,7 +25,7 @@ import {
 import { BatchDto } from './dtos/batch.dto';
 import { TransactionType } from 'src/domain/enum/transactionType';
 import { LogType } from 'src/domain/enum';
-import { compareObjects } from 'src/utils/utils';
+import { compareObjects, noCompareKeys } from 'src/utils/utils';
 
 @Injectable()
 export class FishSeedCompanyService {
@@ -184,7 +184,7 @@ export class FishSeedCompanyService {
     Object.keys(updateFarmedFishContractDto).forEach((key) => {
       if (
         farmedFish[key] !== updateFarmedFishContractDto[key] &&
-        key !== 'transactionHash'
+        !noCompareKeys.includes(key)
       ) {
         isDifferent = true;
       }
@@ -290,7 +290,10 @@ export class FishSeedCompanyService {
     let isDifferent = false;
 
     Object.keys(updateFishSeedDto).forEach((key) => {
-      if (item[key] !== updateFishSeedDto[key] && key !== 'transactionHash') {
+      if (
+        item[key] !== updateFishSeedDto[key] &&
+        !noCompareKeys.includes(key)
+      ) {
         isDifferent = true;
       }
     });

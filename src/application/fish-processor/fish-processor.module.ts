@@ -7,6 +7,8 @@ import {
   FishFarmerSchema,
   FishProcessors,
   FishProcessorSchema,
+  Log,
+  LogSchema,
   Users,
   UserSchema,
 } from 'src/domain/schemas';
@@ -20,6 +22,7 @@ import { FishProcessorService } from './fish-processor.service';
       { name: FishFarmers.name, schema: FishFarmerSchema },
       { name: Users.name, schema: UserSchema },
       { name: Batchs.name, schema: BatchSchema },
+      { name: Log.name, schema: LogSchema },
     ]),
   ],
   controllers: [FishProcessorController],

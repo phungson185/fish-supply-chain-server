@@ -54,7 +54,7 @@ export class FishFarmerController {
     }
   }
 
-  @Roles(RoleType.FishFarmer)
+  @Roles(RoleType.FishFarmer, RoleType.FishProcessor)
   @Get('order/:id')
   public async GetOrder(@Res() res, @Param('id') id: string) {
     try {
@@ -80,7 +80,7 @@ export class FishFarmerController {
     }
   }
 
-  @Roles(RoleType.FishFarmer)
+  @Roles(RoleType.FishFarmer, RoleType.FishProcessor)
   @Put('/updateGrowthDetails/:orderId')
   public async UpdateGrowthDetails(
     @Res() res,

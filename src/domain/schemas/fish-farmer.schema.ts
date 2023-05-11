@@ -94,6 +94,14 @@ export class FishFarmers {
   @AutoMap()
   @Prop()
   image: string;
+
+  @AutoMap()
+  @Prop({ default: false })
+  orderable: boolean;
+
+  @AutoMap()
+  @Prop()
+  farmedFishGrowthDetailsID: string;
 }
 
 export const FishFarmerSchema = SchemaFactory.createForClass(FishFarmers);

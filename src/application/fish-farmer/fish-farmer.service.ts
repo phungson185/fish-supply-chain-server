@@ -30,7 +30,7 @@ import {
   QueryOrderParams,
   UpdateGrowthDetailsDto,
 } from './dtos';
-import { compareObjects } from 'src/utils/utils';
+import { compareObjects, noCompareKeys } from 'src/utils/utils';
 
 @Injectable()
 export class FishFarmerService {
@@ -278,6 +278,8 @@ export class FishFarmerService {
       transactionHash,
       waterTemperature,
       totalNumberOfFish,
+      orderable,
+      farmedFishGrowthDetailsID,
     } = updateGrowthDetailsDto;
 
     const growthDetail = await this.fishFarmerModel.findById(orderId);
@@ -296,7 +298,7 @@ export class FishFarmerService {
     Object.keys(updateGrowthDetailsDto).forEach((key) => {
       if (
         growthDetail[key] !== updateGrowthDetailsDto[key] &&
-        key !== 'transactionHash'
+        !noCompareKeys.includes(key)
       ) {
         isDifferent = true;
       }
@@ -330,6 +332,8 @@ export class FishFarmerService {
             image,
             totalNumberOfFish,
             updater: userId,
+            orderable,
+            farmedFishGrowthDetailsID,
           },
         },
         { new: true },

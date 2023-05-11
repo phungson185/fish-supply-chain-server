@@ -5,6 +5,7 @@ import { Document } from 'mongoose';
 import { ProcessStatus } from '../enum/processStatus';
 import { FishFarmers } from './fish-farmer.schema';
 import { Users } from './user.schema';
+import { GeographicOrigin, MethodOfReproduction } from '../enum';
 
 export type FishProcessorDocument = FishProcessors & Document;
 
@@ -46,6 +47,14 @@ export class FishProcessors {
   speciesName: string;
 
   @AutoMap()
+  @Prop({ enum: GeographicOrigin })
+  geographicOrigin: number;
+
+  @AutoMap()
+  @Prop({ enum: MethodOfReproduction })
+  methodOfReproduction: number;
+
+  @AutoMap()
   @Prop()
   numberOfFishOrdered: number;
 
@@ -84,6 +93,10 @@ export class FishProcessors {
   @AutoMap()
   @Prop()
   processingContract: string;
+
+  @AutoMap()
+  @Prop()
+  image: string;
 }
 
 export const FishProcessorSchema = SchemaFactory.createForClass(FishProcessors);

@@ -14,7 +14,10 @@ const keyMap = {
   owner: 'Owner',
   fishWeight: 'Fish weight',
   totalNumberOfFish: 'Total number of fish',
+  orderable: 'Orderable',
 };
+
+export const noCompareKeys = ['farmedFishGrowthDetailsID', 'transactionHash'];
 
 export const handleMapGeographicOrigin = (geographicOrigin: number) => {
   switch (geographicOrigin) {
@@ -46,7 +49,7 @@ export function compareObjects(oldObj, newObj) {
 
   for (const key in oldObj) {
     if (newObj.hasOwnProperty(key)) {
-      if (oldObj[key] !== newObj[key]) {
+      if (oldObj[key] !== newObj[key] && !noCompareKeys.includes(key)) {
         if (key === 'geographicOrigin') {
           oldData += `<div>${keyMap[key]}: ${handleMapGeographicOrigin(
             oldObj[key],
@@ -70,7 +73,7 @@ export function compareObjects(oldObj, newObj) {
   }
 
   for (const key in newObj) {
-    if (!oldObj.hasOwnProperty(key) && key !== 'transactionHash') {
+    if (!oldObj.hasOwnProperty(key) && !noCompareKeys.includes(key)) {
       if (key === 'geographicOrigin') {
         oldData += `<div>${keyMap[key]}: ${handleMapGeographicOrigin(
           oldObj[key],

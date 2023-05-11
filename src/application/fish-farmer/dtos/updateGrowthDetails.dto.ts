@@ -6,6 +6,7 @@ export class UpdateGrowthDetailsDto {
   transactionHash: number;
 
   @ApiProperty()
+  @Transform(({ value }) => Number(value))
   totalNumberOfFish: number;
 
   @ApiProperty()
@@ -13,6 +14,7 @@ export class UpdateGrowthDetailsDto {
   fishWeight: number;
 
   @ApiProperty()
+  @Transform(({ value }) => Number(value))
   waterTemperature: number;
 
   @ApiProperty()
@@ -20,4 +22,10 @@ export class UpdateGrowthDetailsDto {
 
   @ApiProperty()
   image: string;
+
+  @ApiProperty()
+  orderable: boolean;
+
+  @ApiProperty()
+  farmedFishGrowthDetailsID: string;
 }
