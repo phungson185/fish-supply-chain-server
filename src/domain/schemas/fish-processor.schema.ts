@@ -80,10 +80,6 @@ export class FishProcessors {
 
   @AutoMap()
   @Prop()
-  catchMethod: string;
-
-  @AutoMap()
-  @Prop()
   filletsInPacket: number;
 
   @AutoMap()

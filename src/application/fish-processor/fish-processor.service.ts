@@ -157,7 +157,7 @@ export class FishProcessorService {
           },
         ],
       })
-      .sort(sorter)
+      .sort({ createdAt: 'desc', _id: 'desc' })
       .skip(skipIndex)
       .limit(size);
     const total = await this.fishProcessorModel.countDocuments(query);
@@ -190,6 +190,12 @@ export class FishProcessorService {
     ) {
       throw new BadRequestException('The shipment has not arrived yet');
     }
+
+    await this.logModel.create({
+      objectId: orderId,
+      transactionType: TransactionType.UPDATE_ORDER_STATUS,
+      newData: status,
+    });
 
     result.data = await this.fishProcessorModel.findByIdAndUpdate(
       orderId,
