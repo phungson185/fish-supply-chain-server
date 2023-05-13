@@ -5,6 +5,8 @@ import {
   BatchSchema,
   FishFarmers,
   FishFarmerSchema,
+  FishProcessing,
+  FishProcessingSchema,
   FishProcessors,
   FishProcessorSchema,
   Log,
@@ -19,6 +21,7 @@ import { FishProcessorService } from './fish-processor.service';
   imports: [
     MongooseModule.forFeature([
       { name: FishProcessors.name, schema: FishProcessorSchema },
+      { name: FishProcessing.name, schema: FishProcessingSchema },
       { name: FishFarmers.name, schema: FishFarmerSchema },
       { name: Users.name, schema: UserSchema },
       { name: Batchs.name, schema: BatchSchema },

@@ -9,6 +9,7 @@ import {
   Query,
   Put,
   Param,
+  Req,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { BaseQueryParams } from 'src/domain/dtos';
@@ -21,6 +22,7 @@ import {
   CreateProcessingContractDto,
   OrderDto,
   QueryOrderParams,
+  QueryProcessingContractDto,
 } from './dtos';
 import { FishProcessorService } from './fish-processor.service';
 
@@ -72,15 +74,45 @@ export class FishProcessorController {
   }
 
   @Roles(RoleType.FishProcessor)
-  @Post('/createProcessingContract')
+  @Post('/create-processing-contract')
   public async CreateProcessingContract(
     @Res() res,
+    @Req() req,
     @Body() body: CreateProcessingContractDto,
   ) {
     try {
       const result = await this.fishProcessorService.createProcessingContract(
+        req.user.id,
         body,
       );
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.FishProcessor)
+  @Get('/get-processing-contracts')
+  public async GetProcessingContracts(
+    @Res() res,
+    @Req() req,
+    @Query() queries: QueryProcessingContractDto,
+  ) {
+    try {
+      const result = await this.fishProcessorService.getProcessingContracts(
+        queries,
+      );
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.FishProcessor)
+  @Get('/get-processing-contract/:id')
+  public async GetProcessingContract(@Res() res, @Param('id') id: string) {
+    try {
+      const result = await this.fishProcessorService.getProcessingContract(id);
       return res.status(HttpStatus.OK).json(result);
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json(error);

@@ -6,12 +6,20 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { BaseQueryParams, BaseResult, PaginationDto } from 'src/domain/dtos';
-import { BatchType, ProcessStatus, TransactionType } from 'src/domain/enum';
+import {
+  BatchType,
+  LogType,
+  ProcessStatus,
+  TransactionType,
+} from 'src/domain/enum';
 import {
   BatchDocument,
   Batchs,
   FishFarmerDocument,
   FishFarmers,
+  FishProcessing,
+  FishProcessingDocument,
+  FishProcessingSchema,
   FishProcessorDocument,
   FishProcessors,
   Log,
@@ -24,7 +32,9 @@ import {
   CreateProcessingContractDto,
   OrderDto,
   QueryOrderParams,
+  QueryProcessingContractDto,
 } from './dtos';
+import { compareObjects } from 'src/utils/utils';
 
 @Injectable()
 export class FishProcessorService {
@@ -35,6 +45,8 @@ export class FishProcessorService {
     private readonly userModel: Model<UserDocument>,
     @InjectModel(FishProcessors.name)
     private readonly fishProcessorModel: Model<FishProcessorDocument>,
+    @InjectModel(FishProcessing.name)
+    private readonly fishProcessingModel: Model<FishProcessingDocument>,
     @InjectModel(Batchs.name)
     private readonly batchModel: Model<BatchDocument>,
     @InjectModel(Log.name)
@@ -210,56 +222,124 @@ export class FishProcessorService {
     return result;
   }
 
-  async createProcessingContract(body: CreateProcessingContractDto) {
-    const result = new BaseResult<FishProcessors>();
+  async createProcessingContract(
+    userId: string,
+    createProcessingContractDto: CreateProcessingContractDto,
+  ) {
+    const result = new BaseResult();
     const {
-      orderId,
-      IPFSHash,
-      dateOfProcessing,
+      fishProcessorId,
       fishProcessor,
-      registrationContract,
-      catchMethod,
-      filletsInPacket,
       processingContract,
       numberOfPackets,
-    } = body;
+      processedSpeciesName,
+    } = createProcessingContractDto;
 
-    const fishhProcessor = await this.userModel.findOne({
-      address: fishProcessor,
-    });
-
+    const fishhProcessor = await this.userModel.findById(fishProcessor);
     if (!fishhProcessor) {
       throw new NotFoundException('Fish processor not found');
     }
 
-    const order = await this.fishProcessorModel
-      .findById(orderId)
-      .populate('fishFarmerId');
+    const order = await this.fishProcessorModel.findById(fishProcessorId);
     if (!order) {
       throw new NotFoundException('Order not found');
     }
 
-    result.data = await this.fishProcessorModel.findByIdAndUpdate(orderId, {
-      $set: {
-        IPFSHash,
-        dateOfProcessing,
-        fishProcessor: fishhProcessor,
-        registrationContract,
-        catchMethod,
-        filletsInPacket,
-        processingContract,
-        status: ProcessStatus.Proccessed,
-        numberOfPackets,
-      },
+    const fishProcessing = await this.fishProcessingModel.create({
+      ...createProcessingContractDto,
+    });
+
+    const { oldData, newData } = compareObjects(
+      {},
+      createProcessingContractDto,
+    );
+
+    await this.logModel.create({
+      objectId: processingContract,
+      owner: userId,
+      transactionType: TransactionType.DEPLOY_CONTRACT,
+      logType: LogType.BLOCKCHAIN,
+      message: `Deploy ${numberOfPackets} packets of ${processedSpeciesName} fish`,
+      oldData: oldData,
+      newData: newData,
+      title: 'Deploy processing contract',
     });
 
     await this.batchModel.create({
-      fishProcessorId: order,
+      fishProcessingId: fishProcessing,
       fishFarmerId: order.fishFarmerId,
       farmedFishId: order.fishFarmerId.farmedFishId,
       type: BatchType.FishSeedCompany,
     });
 
+    return result;
+  }
+
+  async getProcessingContracts(queries: QueryProcessingContractDto) {
+    const result = new BaseResult();
+    const { search, page, size, orderBy, desc, fishProcessor } = queries;
+    const skipIndex = size * (page - 1);
+    const query: FilterQuery<FishProcessingDocument> = {};
+    // if (search) {
+    //   query.$or = [
+    //     {
+    //       fishSeedsPurchaser: { $regex: search, $options: 'i' },
+    //     },
+    //     {
+    //       fishSeedsSeller: { $regex: search, $options: 'i' },
+    //     },
+    //   ];
+    // }
+
+    if (fishProcessor) {
+      query.fishProcessor = fishProcessor;
+    }
+
+    let sorter = {};
+    if (orderBy) {
+      switch (orderBy) {
+        case 'speciesName':
+          sorter = desc
+            ? { speciesName: 'desc', _id: 'desc' }
+            : { speciesName: 'asc', _id: 'asc' };
+          break;
+        case 'numberOfFishOrdered':
+          sorter = desc
+            ? { numberOfFishOrdered: 'desc', _id: 'desc' }
+            : { numberOfFishOrdered: 'asc', _id: 'asc' };
+          break;
+        default:
+          sorter = desc
+            ? { updatedAt: 'desc', _id: 'desc' }
+            : { updatedAt: 'asc', _id: 'asc' };
+          break;
+      }
+    }
+
+    const items = await this.fishProcessingModel
+      .find(query)
+      .populate('fishProcessorId')
+      .populate('fishProcessor')
+      .sort({ updatedAt: 'desc', _id: 'desc' })
+      .skip(skipIndex)
+      .limit(size);
+    const total = await this.fishProcessingModel.countDocuments(query);
+
+    result.data = new PaginationDto<FishProcessing>(items, total, page, size);
+    return result;
+  }
+
+  async getProcessingContract(processingContractId: string) {
+    const result = new BaseResult();
+    const processingContract = await this.fishProcessingModel
+      .findById(processingContractId)
+      .populate('fishProcessorId')
+      .populate('fishProcessor');
+    if (!processingContract) {
+      throw new NotFoundException('Processing contract not found');
+    }
+
+    result.data = processingContract;
     return result;
   }
 }

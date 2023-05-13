@@ -8,6 +8,7 @@ import { FarmedFishs } from './farmed-fish.schema';
 import { FishFarmers } from './fish-farmer.schema';
 import { FishProcessors } from './fish-processor.schema';
 import { Retailers } from './retailer.schema';
+import { FishProcessing } from './fish-processing.schema';
 
 export type BatchDocument = Batchs & Document;
 
@@ -42,9 +43,9 @@ export class Batchs {
   @AutoMap()
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'FishProcessors',
+    ref: 'FishProcessing',
   })
-  fishProcessorId: FishProcessors;
+  fishProcessingId: FishProcessing;
 
   @AutoMap()
   @Prop({
