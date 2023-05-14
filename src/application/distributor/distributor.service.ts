@@ -6,84 +6,101 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { BaseResult, PaginationDto } from 'src/domain/dtos';
-import { BatchType, ProcessStatus } from 'src/domain/enum';
+import { BatchType, ProcessStatus, TransactionType } from 'src/domain/enum';
 import {
   BatchDocument,
   Batchs,
   DistributorDocument,
   Distributors,
+  FishProcessing,
+  FishProcessingDocument,
   FishProcessorDocument,
   FishProcessors,
+  Log,
+  LogDocument,
   UserDocument,
   Users,
 } from 'src/domain/schemas';
 import { ConfirmOrderDto, OrderDto, QueryOrderParams } from './dtos';
+import { compareObjects } from 'src/utils/utils';
 
 @Injectable()
 export class DistributorService {
   constructor(
-    @InjectModel(FishProcessors.name)
-    private readonly fishProcessorModel: Model<FishProcessorDocument>,
+    @InjectModel(FishProcessing.name)
+    private readonly fishProcessingModel: Model<FishProcessingDocument>,
     @InjectModel(Distributors.name)
     private readonly distributorModel: Model<DistributorDocument>,
     @InjectModel(Users.name)
     private readonly userModel: Model<UserDocument>,
     @InjectModel(Batchs.name)
     private readonly batchModel: Model<BatchDocument>,
+    @InjectModel(Log.name)
+    private readonly logModel: Model<LogDocument>,
   ) {}
 
   async createOrder(orderDto: OrderDto) {
     const result = new BaseResult();
     const {
       orderer,
-      processedFishPackageId,
-      processorId,
       quantityOfFishPackageOrdered,
       receiver,
-      processedFishPurchaseOrderId,
+      fishProcessingId,
     } = orderDto;
 
-    const purcharser = await this.userModel.findOne({
-      address: orderer,
-    });
+    const purcharser = await this.userModel.findById(orderer);
     if (!purcharser) {
       throw new NotFoundException('Purchaser not found');
     }
 
-    const seller = await this.userModel.findOne({
-      address: receiver,
-    });
+    const seller = await this.userModel.findById(receiver);
     if (!seller) {
       throw new NotFoundException('Seller not found');
     }
 
-    const fishProcessor = await this.fishProcessorModel.findById(processorId);
-    if (!fishProcessor) {
-      throw new NotFoundException('Fish processor not found');
+    const fishProcessing = await this.fishProcessingModel.findById(
+      fishProcessingId,
+    );
+    if (!fishProcessing) {
+      throw new NotFoundException('Fish processing not found');
     }
-
-    Object.assign(orderDto, {
-      orderer: purcharser,
-      receiver: seller,
-      processedFishPackageId,
-      quantityOfFishPackageOrdered,
-      processorId: fishProcessor,
-      processedFishPurchaseOrderId,
-      owner: purcharser,
-    });
 
     result.data = await this.distributorModel.create({
       ...orderDto,
+      owner: orderer,
+      numberOfPackets: quantityOfFishPackageOrdered,
     });
+
+    if ((result.data as any)._id) {
+      await this.logModel.create({
+        objectId: (result.data as any)._id,
+        transactionType: TransactionType.UPDATE_ORDER_STATUS,
+        newData: ProcessStatus.Pending,
+      });
+    }
 
     return result;
   }
 
   async getOrders(queries: QueryOrderParams) {
     const result = new BaseResult();
-    const { search, page, size, orderBy, desc, status } = queries;
+    const { search, page, size, orderBy, desc, status, receiver, orderer } =
+      queries;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<DistributorDocument> = {};
+
+    if (status) {
+      query.status = status;
+    }
+
+    if (orderer) {
+      query.orderer = orderer;
+    }
+
+    if (receiver) {
+      query.receiver = receiver;
+    }
+
     // if (search) {
     //   query.$or = [
     //     {
@@ -113,7 +130,7 @@ export class DistributorService {
 
     const items = await this.distributorModel
       .find(query)
-      .populate('processorId')
+      .populate('fishProcessingId')
       .populate('orderer')
       .populate('receiver')
       .populate('owner')
@@ -131,11 +148,14 @@ export class DistributorService {
     const { status } = confirmOrderDto;
 
     const distributor = await this.distributorModel.findById(orderId).populate({
-      path: 'processorId',
+      path: 'fishProcessingId',
       populate: {
-        path: 'fishFarmerId',
+        path: 'fishProcessorId',
         populate: {
-          path: 'farmedFishId',
+          path: 'fishFarmerId',
+          populate: {
+            path: 'farmedFishId',
+          },
         },
       },
     });
@@ -159,13 +179,21 @@ export class DistributorService {
 
     if (status == ProcessStatus.Received) {
       await this.batchModel.create({
-        farmedFishId: distributor.processorId.fishFarmerId.farmedFishId,
-        fishFarmerId: distributor.processorId.fishFarmerId,
-        fishProcessorId: distributor.processorId,
-        distributorId: distributor,
+        farmedFishId:
+          distributor.fishProcessingId.fishProcessorId.fishFarmerId
+            .farmedFishId,
+        fishFarmerId: distributor.fishProcessingId.fishProcessorId.fishFarmerId,
+        fishProcessingId: distributor.fishProcessingId,
+        distributorId: distributor.id,
         type: BatchType.FishSeedCompany,
       });
     }
+
+    await this.logModel.create({
+      objectId: orderId,
+      transactionType: TransactionType.UPDATE_ORDER_STATUS,
+      newData: status,
+    });
 
     result.data = await this.distributorModel.findByIdAndUpdate(
       orderId,

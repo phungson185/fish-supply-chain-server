@@ -54,10 +54,6 @@ export class FishProcessing {
 
   @AutoMap()
   @Prop()
-  processedFishPackageID: string;
-
-  @AutoMap()
-  @Prop()
   filletsInPacket: number;
 
   @AutoMap()

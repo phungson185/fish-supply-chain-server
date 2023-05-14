@@ -5,6 +5,7 @@ import { Document } from 'mongoose';
 import { ProcessStatus } from '../enum';
 import { FishProcessors } from './fish-processor.schema';
 import { Users } from './user.schema';
+import { FishProcessing } from './fish-processing.schema';
 
 export type DistributorDocument = Distributors & Document;
 
@@ -22,16 +23,20 @@ export type DistributorDocument = Distributors & Document;
 })
 export class Distributors {
   @AutoMap()
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'FishProcessors' })
-  processorId: FishProcessors;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'FishProcessing' })
+  fishProcessingId: FishProcessing;
+
+  @AutoMap()
+  @Prop()
+  speciesName: string;
+
+  @AutoMap()
+  @Prop()
+  description: string;
 
   @AutoMap()
   @Prop()
   quantityOfFishPackageOrdered: number;
-
-  @AutoMap()
-  @Prop()
-  processedFishPackageId: string;
 
   @AutoMap()
   @Prop()
@@ -52,6 +57,30 @@ export class Distributors {
   @AutoMap()
   @Prop({ enum: ProcessStatus, default: ProcessStatus.Pending })
   status: number;
+
+  @AutoMap()
+  @Prop()
+  dateOfProcessing: Date;
+
+  @AutoMap()
+  @Prop()
+  dateOfExpiry: Date;
+
+  @AutoMap()
+  @Prop()
+  numberOfPackets: number;
+
+  @AutoMap()
+  @Prop()
+  filletsInPacket: number;
+
+  @AutoMap()
+  @Prop()
+  IPFSHash: string;
+
+  @AutoMap()
+  @Prop()
+  image: string;
 }
 
 export const DistributorSchema = SchemaFactory.createForClass(Distributors);

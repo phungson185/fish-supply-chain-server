@@ -1,6 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 
 export class OrderDto {
+  @ApiProperty()
+  fishProcessingId: string;
+
+  @ApiProperty()
+  speciesName: string;
+
+  @ApiProperty()
+  @Transform(({ value }) => Number(value))
+  quantityOfFishPackageOrdered: number;
+
+  @ApiProperty()
+  processedFishPurchaseOrderId: string;
+
   @ApiProperty()
   orderer: string;
 
@@ -8,14 +22,24 @@ export class OrderDto {
   receiver: string;
 
   @ApiProperty()
-  processedFishPackageId: string;
+  @Transform(({ value }) => Number(value))
+  status: number;
 
   @ApiProperty()
-  quantityOfFishPackageOrdered: number;
+  @Transform(({ value }) => new Date(value))
+  dateOfProcessing: Date;
 
   @ApiProperty()
-  processorId: string;
-  
+  @Transform(({ value }) => new Date(value))
+  dateOfExpiry: Date;
+
   @ApiProperty()
-  processedFishPurchaseOrderId: string;
+  @Transform(({ value }) => new Date(value))
+  filletsInPacket: number;
+
+  @ApiProperty()
+  IPFSHash: string;
+
+  @ApiProperty()
+  image: string;
 }

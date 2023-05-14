@@ -90,10 +90,10 @@ export class BatchService {
         ],
       })
       .populate({
-        path: 'fishProcessorId',
+        path: 'fishProcessingId',
         populate: [
           {
-            path: 'owner',
+            path: 'fishProcessorId',
           },
           {
             path: 'fishProcessor',
@@ -107,7 +107,7 @@ export class BatchService {
             path: 'owner',
           },
           {
-            path: 'processorId',
+            path: 'fishProcessingId',
           },
         ],
       })
@@ -156,10 +156,10 @@ export class BatchService {
         ],
       })
       .populate({
-        path: 'fishProcessorId',
+        path: 'fishProcessingId',
         populate: [
           {
-            path: 'owner',
+            path: 'fishProcessorId',
           },
           {
             path: 'fishProcessor',
@@ -173,7 +173,7 @@ export class BatchService {
             path: 'owner',
           },
           {
-            path: 'processorId',
+            path: 'fishProcessingId',
           },
         ],
       })

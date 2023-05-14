@@ -29,9 +29,6 @@ export class CreateProcessingContractDto {
   farmedFishPurchaseOrderID: string;
 
   @ApiProperty()
-  processedFishPackageID: string;
-
-  @ApiProperty()
   @Transform(({ value }) => Number(value))
   filletsInPacket: number;
 

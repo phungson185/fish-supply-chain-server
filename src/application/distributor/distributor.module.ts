@@ -5,8 +5,12 @@ import {
   BatchSchema,
   Distributors,
   DistributorSchema,
+  FishProcessing,
+  FishProcessingSchema,
   FishProcessors,
   FishProcessorSchema,
+  Log,
+  LogSchema,
   Users,
   UserSchema,
 } from 'src/domain/schemas';
@@ -17,9 +21,11 @@ import { DistributorService } from './distributor.service';
   imports: [
     MongooseModule.forFeature([
       { name: Distributors.name, schema: DistributorSchema },
+      { name: FishProcessing.name, schema: FishProcessingSchema },
       { name: FishProcessors.name, schema: FishProcessorSchema },
       { name: Users.name, schema: UserSchema },
       { name: Batchs.name, schema: BatchSchema },
+      { name: Log.name, schema: LogSchema },
     ]),
   ],
   controllers: [DistributorController],

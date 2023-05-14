@@ -33,8 +33,9 @@ import {
   OrderDto,
   QueryOrderParams,
   QueryProcessingContractDto,
+  UpdateProcessingContractDto,
 } from './dtos';
-import { compareObjects } from 'src/utils/utils';
+import { compareObjects, noCompareKeys } from 'src/utils/utils';
 
 @Injectable()
 export class FishProcessorService {
@@ -240,7 +241,16 @@ export class FishProcessorService {
       throw new NotFoundException('Fish processor not found');
     }
 
-    const order = await this.fishProcessorModel.findById(fishProcessorId);
+    const order = await this.fishProcessorModel
+      .findById(fishProcessorId)
+      .populate({
+        path: 'fishFarmerId',
+        populate: [
+          {
+            path: 'farmedFishId',
+          },
+        ],
+      });
     if (!order) {
       throw new NotFoundException('Order not found');
     }
@@ -275,6 +285,53 @@ export class FishProcessorService {
     return result;
   }
 
+  async updateProcessingContract(
+    id: string,
+    body: UpdateProcessingContractDto,
+  ) {
+    const result = new BaseResult();
+    const fishProcessing = await this.fishProcessingModel.findById(id);
+    if (!fishProcessing) {
+      throw new NotFoundException('Processing contract not found');
+    }
+
+    let isDifferent = false;
+    Object.keys(body).forEach((key) => {
+      if (fishProcessing[key] !== body[key] && !noCompareKeys.includes(key)) {
+        isDifferent = true;
+      }
+    });
+
+    if (isDifferent) {
+      const { oldData, newData } = compareObjects(
+        fishProcessing.toObject(),
+        body,
+      );
+
+      await this.logModel.create({
+        objectId: fishProcessing.processingContract,
+        transactionHash: body.transactionHash,
+        owner: fishProcessing.fishProcessor,
+        transactionType: TransactionType.UPDATE_PROCESSING_CONTRACT,
+        logType: LogType.BLOCKCHAIN,
+        message: `Update processing contract`,
+        oldData,
+        newData,
+        title: 'Update processing contract',
+      });
+    }
+
+    result.data = await this.fishProcessingModel.findByIdAndUpdate(
+      id,
+      {
+        $set: body,
+      },
+      { new: true },
+    );
+
+    return result;
+  }
+
   async getProcessingContracts(queries: QueryProcessingContractDto) {
     const result = new BaseResult();
     const { search, page, size, orderBy, desc, fishProcessor } = queries;
@@ -292,7 +349,7 @@ export class FishProcessorService {
     // }
 
     if (fishProcessor) {
-      query.fishProcessor = fishProcessor;
+      query.id = fishProcessor;
     }
 
     let sorter = {};
@@ -340,6 +397,26 @@ export class FishProcessorService {
     }
 
     result.data = processingContract;
+    return result;
+  }
+
+  async getProfileInventory(userId: string) {
+    const result = new BaseResult();
+
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const fishProcessing = await this.fishProcessingModel
+      .find({ fishProcessor: userId })
+      .countDocuments();
+
+    result.data = {
+      user,
+      fishProcessing,
+    };
+
     return result;
   }
 }

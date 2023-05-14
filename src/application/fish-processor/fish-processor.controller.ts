@@ -23,6 +23,7 @@ import {
   OrderDto,
   QueryOrderParams,
   QueryProcessingContractDto,
+  UpdateProcessingContractDto,
 } from './dtos';
 import { FishProcessorService } from './fish-processor.service';
 
@@ -91,7 +92,25 @@ export class FishProcessorController {
     }
   }
 
-  @Roles(RoleType.FishProcessor)
+  @Roles(RoleType.FishProcessor, RoleType.Distributor)
+  @Put('/processing-contract/:id')
+  public async UpdateProcessingContract(
+    @Res() res,
+    @Param('id') id: string,
+    @Body() body: UpdateProcessingContractDto,
+  ) {
+    try {
+      const result = await this.fishProcessorService.updateProcessingContract(
+        id,
+        body,
+      );
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.FishProcessor, RoleType.Distributor)
   @Get('/get-processing-contracts')
   public async GetProcessingContracts(
     @Res() res,
@@ -113,6 +132,23 @@ export class FishProcessorController {
   public async GetProcessingContract(@Res() res, @Param('id') id: string) {
     try {
       const result = await this.fishProcessorService.getProcessingContract(id);
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.FishProcessor, RoleType.Distributor)
+  @Get('/get-profile-inventory/:id')
+  public async GetProfileInventory(
+    @Res() res,
+    @Req() req,
+    @Param('id') id: string,
+  ) {
+    try {
+      const result = await this.fishProcessorService.getProfileInventory(
+        id ?? req.user.id,
+      );
       return res.status(HttpStatus.OK).json(result);
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json(error);

@@ -168,9 +168,11 @@ export class RetailerService {
     if (status == ProcessStatus.Received) {
       await this.batchModel.create({
         farmedFishId:
-          retailer.distributorId.processorId.fishFarmerId.farmedFishId,
-        fishFarmerId: retailer.distributorId.processorId.fishFarmerId,
-        fishProcessorId: retailer.distributorId.processorId,
+          retailer.distributorId.fishProcessingId.fishProcessorId.fishFarmerId
+            .farmedFishId,
+        fishFarmerId:
+          retailer.distributorId.fishProcessingId.fishProcessorId.fishFarmerId,
+        fishProcessingId: retailer.distributorId.fishProcessingId,
         distributorId: retailer.distributorId,
         retailerId: retailer,
         type: BatchType.FishSeedCompany,

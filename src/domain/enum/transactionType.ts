@@ -3,4 +3,5 @@ export enum TransactionType {
   DEPLOY_CONTRACT = 1,
   UPDATE_ORDER_STATUS = 2,
   UPDATE_FISH_GROWTH = 3,
+  UPDATE_PROCESSING_CONTRACT = 4,
 }
