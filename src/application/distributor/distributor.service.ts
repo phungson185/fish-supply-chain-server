@@ -134,7 +134,7 @@ export class DistributorService {
       .populate('orderer')
       .populate('receiver')
       .populate('owner')
-      .sort(sorter)
+      .sort({ updatedAt: 'desc', _id: 'desc' })
       .skip(skipIndex)
       .limit(size);
     const total = await this.distributorModel.countDocuments(query);
@@ -204,6 +204,26 @@ export class DistributorService {
       },
       { new: true },
     );
+
+    return result;
+  }
+
+  async getProfileInventory(userId: string) {
+    const result = new BaseResult();
+
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const distributor = await this.distributorModel
+      .find({ owner: userId })
+      .countDocuments();
+
+    result.data = {
+      user,
+      distributor,
+    };
 
     return result;
   }

@@ -334,7 +334,17 @@ export class FishProcessorService {
 
   async getProcessingContracts(queries: QueryProcessingContractDto) {
     const result = new BaseResult();
-    const { search, page, size, orderBy, desc, fishProcessor } = queries;
+    const {
+      search,
+      page,
+      size,
+      orderBy,
+      desc,
+      fishProcessor,
+      disable,
+      fishProcessorId,
+      isHavePackets,
+    } = queries;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<FishProcessingDocument> = {};
     // if (search) {
@@ -348,8 +358,21 @@ export class FishProcessorService {
     //   ];
     // }
 
+    if (fishProcessorId) {
+      query.fishProcessorId = fishProcessorId;
+    }
+
     if (fishProcessor) {
       query.id = fishProcessor;
+    }
+
+    if (disable) {
+      query.disable = disable;
+    }
+    console.log(isHavePackets);
+
+    if (isHavePackets !== undefined && isHavePackets) {
+      query.numberOfPackets = { $gt: 0 };
     }
 
     let sorter = {};

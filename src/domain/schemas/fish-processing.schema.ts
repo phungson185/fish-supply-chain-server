@@ -67,6 +67,10 @@ export class FishProcessing {
   @AutoMap()
   @Prop()
   image: string;
+
+  @AutoMap()
+  @Prop({ default: false })
+  disable: boolean;
 }
 
 export const FishProcessingSchema =

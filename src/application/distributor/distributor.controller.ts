@@ -66,4 +66,21 @@ export class DistributorController {
       return res.status(HttpStatus.BAD_REQUEST).json(error);
     }
   }
+
+  @Roles(RoleType.Distributor, RoleType.Retailer)
+  @Get('/get-profile-inventory/:id')
+  public async GetProfileInventory(
+    @Res() res,
+    @Req() req,
+    @Param('id') id: string,
+  ) {
+    try {
+      const result = await this.distributorSerive.getProfileInventory(
+        id ?? req.user.id,
+      );
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
 }

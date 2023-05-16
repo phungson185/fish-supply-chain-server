@@ -9,6 +9,7 @@ import { RetailerModule } from './retailer/retailer.module';
 import { SystemModule } from './system/system.module';
 import { UserModule } from './user/user.module';
 import { LogModule } from './log/log.module';
+import { WorkerModule } from './worker/worker.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { LogModule } from './log/log.module';
     DistributorModule,
     RetailerModule,
     LogModule,
+    WorkerModule,
   ],
 })
 export class ApplicationModule {}
