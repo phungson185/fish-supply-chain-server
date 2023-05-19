@@ -6,7 +6,12 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { BaseResult, PaginationDto } from 'src/domain/dtos';
-import { BatchType, ProcessStatus, TransactionType } from 'src/domain/enum';
+import {
+  BatchType,
+  LogType,
+  ProcessStatus,
+  TransactionType,
+} from 'src/domain/enum';
 import {
   BatchDocument,
   Batchs,
@@ -21,8 +26,13 @@ import {
   UserDocument,
   Users,
 } from 'src/domain/schemas';
-import { ConfirmOrderDto, OrderDto, QueryOrderParams } from './dtos';
-import { compareObjects } from 'src/utils/utils';
+import {
+  ConfirmOrderDto,
+  OrderDto,
+  QueryOrderParams,
+  UpdateOrderDto,
+} from './dtos';
+import { compareObjects, noCompareKeys } from 'src/utils/utils';
 
 @Injectable()
 export class DistributorService {
@@ -84,8 +94,19 @@ export class DistributorService {
 
   async getOrders(queries: QueryOrderParams) {
     const result = new BaseResult();
-    const { search, page, size, orderBy, desc, status, receiver, orderer } =
-      queries;
+    const {
+      search,
+      page,
+      size,
+      orderBy,
+      desc,
+      status,
+      receiver,
+      orderer,
+      disable,
+      listing,
+      isHavePackets,
+    } = queries;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<DistributorDocument> = {};
 
@@ -99,6 +120,18 @@ export class DistributorService {
 
     if (receiver) {
       query.receiver = receiver;
+    }
+
+    if (disable !== undefined) {
+      query.disable = disable;
+    }
+
+    if (listing !== undefined) {
+      query.listing = listing;
+    }
+
+    if (isHavePackets) {
+      query.numberOfPackets = { $gt: 0 };
     }
 
     // if (search) {
@@ -204,6 +237,55 @@ export class DistributorService {
       },
       { new: true },
     );
+
+    return result;
+  }
+
+  async updateOrder(orderId: string, updateOrderDto: UpdateOrderDto) {
+    const result = new BaseResult();
+
+    const distributor = await this.distributorModel.findById(orderId);
+    if (!distributor) {
+      throw new NotFoundException('Product not found');
+    }
+
+    result.data = await this.distributorModel.findByIdAndUpdate(
+      orderId,
+      {
+        $set: {
+          ...updateOrderDto,
+        },
+      },
+      { new: true },
+    );
+
+    let isDifferent = false;
+    Object.keys(updateOrderDto).forEach((key) => {
+      if (
+        distributor[key] !== updateOrderDto[key] &&
+        !noCompareKeys.includes(key)
+      ) {
+        isDifferent = true;
+      }
+    });
+
+    if (isDifferent) {
+      const { oldData, newData } = compareObjects(
+        distributor.toObject(),
+        updateOrderDto,
+      );
+
+      await this.logModel.create({
+        objectId: distributor.id,
+        owner: distributor.owner,
+        transactionType: TransactionType.UPDATE_PRODUCT,
+        logType: LogType.API,
+        message: `Update product status`,
+        oldData,
+        newData,
+        title: 'Update product status',
+      });
+    }
 
     return result;
   }

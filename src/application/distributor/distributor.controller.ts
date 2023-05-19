@@ -18,7 +18,12 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/role.decorator';
 import { RolesGuard } from '../auth/role.guard';
 import { DistributorService } from './distributor.service';
-import { ConfirmOrderDto, OrderDto, QueryOrderParams } from './dtos';
+import {
+  ConfirmOrderDto,
+  OrderDto,
+  QueryOrderParams,
+  UpdateOrderDto,
+} from './dtos';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth('JWT')
@@ -60,6 +65,24 @@ export class DistributorController {
       const result = await this.distributorSerive.confirmOrder(
         orderId,
         confirmOrderDto,
+      );
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.Distributor)
+  @Put('/orders/:orderId/update')
+  public async UpdateOrder(
+    @Res() res,
+    @Param('orderId') orderId: string,
+    @Body() updateOrderDto: UpdateOrderDto,
+  ) {
+    try {
+      const result = await this.distributorSerive.updateOrder(
+        orderId,
+        updateOrderDto,
       );
       return res.status(HttpStatus.OK).json(result);
     } catch (error) {

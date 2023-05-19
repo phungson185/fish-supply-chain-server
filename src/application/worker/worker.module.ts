@@ -3,7 +3,14 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 
 import { WorkerService } from './worker.service';
-import { FishProcessing, FishProcessingSchema } from 'src/domain/schemas';
+import {
+  DistributorSchema,
+  Distributors,
+  FishProcessing,
+  FishProcessingSchema,
+  RetailerSchema,
+  Retailers,
+} from 'src/domain/schemas';
 
 @Module({
   imports: [
@@ -14,6 +21,8 @@ import { FishProcessing, FishProcessingSchema } from 'src/domain/schemas';
     }),
     MongooseModule.forFeature([
       { name: FishProcessing.name, schema: FishProcessingSchema },
+      { name: Distributors.name, schema: DistributorSchema },
+      { name: Retailers.name, schema: RetailerSchema },
     ]),
   ],
   providers: [WorkerService],

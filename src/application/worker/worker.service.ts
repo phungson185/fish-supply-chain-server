@@ -2,13 +2,24 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Interval } from '@nestjs/schedule';
 import { Model } from 'mongoose';
-import { FishProcessing, FishProcessingDocument } from 'src/domain/schemas';
+import {
+  DistributorDocument,
+  Distributors,
+  FishProcessing,
+  FishProcessingDocument,
+  RetailerDocument,
+  Retailers,
+} from 'src/domain/schemas';
 
 @Injectable()
 export class WorkerService {
   constructor(
     @InjectModel(FishProcessing.name)
     private readonly fishProcessingModel: Model<FishProcessingDocument>,
+    @InjectModel(Distributors.name)
+    private readonly distributorModel: Model<DistributorDocument>,
+    @InjectModel(Retailers.name)
+    private readonly retailerModel: Model<RetailerDocument>,
   ) {}
 
   @Interval(24 * 60 * 60 * 1000) // Runs once every day (24 hours)
@@ -36,6 +47,27 @@ export class WorkerService {
         contract.disable = false;
         await contract.save();
       }
+      console.log('End update status fish processing contract');
+
+      console.log('Start update status distributor');
+      const distributors = await this.distributorModel.find({
+        dateOfExpiry: { $lt: currentDate },
+      });
+
+      for (const distributor of distributors) {
+        distributor.disable = true;
+        await distributor.save();
+      }
+
+      const activeDistributors = await this.distributorModel.find({
+        dateOfExpiry: { $gte: currentDate },
+      });
+
+      for (const distributor of activeDistributors) {
+        distributor.disable = false;
+        await distributor.save();
+      }
+      console.log('End update status distributor');
     } catch (error) {
       console.log(error);
     }

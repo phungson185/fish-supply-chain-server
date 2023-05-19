@@ -10,4 +10,13 @@ export class QueryOrderParams extends BaseQueryParams {
 
   @ApiProperty()
   receiver: string;
+
+  @ApiProperty()
+  disable: boolean;
+
+  @ApiProperty()
+  listing: boolean;
+
+  @ApiProperty()
+  isHavePackets: boolean;
 }

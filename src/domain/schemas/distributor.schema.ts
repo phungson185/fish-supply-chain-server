@@ -20,6 +20,16 @@ export type DistributorDocument = Distributors & Document;
       return ret;
     },
   },
+
+  toObject: {
+    transform: function (doc, ret, options) {
+      delete ret._id;
+      delete ret.__v;
+      delete ret.createdAt;
+      delete ret.updatedAt;
+      return ret;
+    },
+  },
 })
 export class Distributors {
   @AutoMap()
@@ -81,6 +91,14 @@ export class Distributors {
   @AutoMap()
   @Prop()
   image: string;
+
+  @AutoMap()
+  @Prop({ default: false })
+  disable: boolean;
+
+  @AutoMap()
+  @Prop({ default: false })
+  listing: boolean;
 }
 
 export const DistributorSchema = SchemaFactory.createForClass(Distributors);
