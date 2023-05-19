@@ -9,4 +9,7 @@ export class UpdateProcessingContractDto extends CreateProcessingContractDto {
   @ApiProperty()
   @Transform(({ value }) => Number(value))
   status: number;
+
+  @ApiProperty()
+  listing: boolean;
 }

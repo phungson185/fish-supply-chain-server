@@ -9,6 +9,9 @@ export class OrderDto {
   speciesName: string;
 
   @ApiProperty()
+  description: string;
+
+  @ApiProperty()
   @Transform(({ value }) => Number(value))
   quantityOfFishPackageOrdered: number;
 

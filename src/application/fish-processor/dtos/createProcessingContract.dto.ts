@@ -9,6 +9,9 @@ export class CreateProcessingContractDto {
   processedSpeciesName: string;
 
   @ApiProperty()
+  description: string;
+
+  @ApiProperty()
   registrationContract: string;
 
   @ApiProperty()

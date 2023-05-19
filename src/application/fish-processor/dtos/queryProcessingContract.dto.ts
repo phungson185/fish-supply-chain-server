@@ -13,4 +13,7 @@ export class QueryProcessingContractDto extends BaseQueryParams {
 
   @ApiProperty()
   disable?: boolean;
+
+  @ApiProperty()
+  listing?: boolean;
 }

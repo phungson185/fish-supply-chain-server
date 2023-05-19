@@ -344,6 +344,7 @@ export class FishProcessorService {
       disable,
       fishProcessorId,
       isHavePackets,
+      listing,
     } = queries;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<FishProcessingDocument> = {};
@@ -366,13 +367,16 @@ export class FishProcessorService {
       query.id = fishProcessor;
     }
 
-    if (disable) {
+    if (disable !== undefined) {
       query.disable = disable;
     }
-    console.log(isHavePackets);
 
     if (isHavePackets !== undefined && isHavePackets) {
       query.numberOfPackets = { $gt: 0 };
+    }
+
+    if (listing !== undefined) {
+      query.listing = listing;
     }
 
     let sorter = {};

@@ -30,6 +30,10 @@ export class FishProcessing {
 
   @AutoMap()
   @Prop()
+  description: string;
+
+  @AutoMap()
+  @Prop()
   registrationContract: string;
 
   @AutoMap()
@@ -71,6 +75,10 @@ export class FishProcessing {
   @AutoMap()
   @Prop({ default: false })
   disable: boolean;
+
+  @AutoMap()
+  @Prop({ default: false })
+  listing: boolean;
 }
 
 export const FishProcessingSchema =
