@@ -6,18 +6,31 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { BaseResult, PaginationDto } from 'src/domain/dtos';
-import { BatchType, ProcessStatus } from 'src/domain/enum';
+import {
+  BatchType,
+  LogType,
+  ProcessStatus,
+  TransactionType,
+} from 'src/domain/enum';
 import {
   BatchDocument,
   Batchs,
   DistributorDocument,
   Distributors,
+  Log,
+  LogDocument,
   RetailerDocument,
   Retailers,
   UserDocument,
   Users,
 } from 'src/domain/schemas';
-import { ConfirmOrderDto, OrderDto, QueryOrderParams } from './dtos';
+import {
+  ConfirmOrderDto,
+  OrderDto,
+  QueryOrderParams,
+  UpdateOrderDto,
+} from './dtos';
+import { compareObjects, noCompareKeys } from 'src/utils/utils';
 
 @Injectable()
 export class RetailerService {
@@ -30,29 +43,21 @@ export class RetailerService {
     private readonly userModel: Model<UserDocument>,
     @InjectModel(Batchs.name)
     private readonly batchModel: Model<BatchDocument>,
+    @InjectModel(Log.name)
+    private readonly logModel: Model<LogDocument>,
   ) {}
 
   async createOrder(orderDto: OrderDto) {
     const result = new BaseResult();
-    const {
-      buyer,
-      seller,
-      numberOfFishPackagesOrdered,
-      processedFishPurchaseOrderID,
-      retailerPurchaseOrderID,
-      distributorId,
-    } = orderDto;
+    const { buyer, seller, numberOfFishPackagesOrdered, distributorId } =
+      orderDto;
 
-    const purcharser = await this.userModel.findOne({
-      address: buyer,
-    });
-    if (!purcharser) {
-      throw new NotFoundException('Purchaser not found');
+    const buyerr = await this.userModel.findById(buyer);
+    if (!buyerr) {
+      throw new NotFoundException('Buyer not found');
     }
 
-    const sellerr = await this.userModel.findOne({
-      address: seller,
-    });
+    const sellerr = await this.userModel.findById(seller);
     if (!sellerr) {
       throw new NotFoundException('Seller not found');
     }
@@ -62,26 +67,38 @@ export class RetailerService {
       throw new NotFoundException('Distributor not found');
     }
 
-    Object.assign(orderDto, {
-      buyer: purcharser,
-      seller: sellerr,
-      distributorId: distributor,
-      numberOfFishPackagesOrdered,
-      processedFishPurchaseOrderID,
-      retailerPurchaseOrderID,
-      owner: purcharser,
-    });
-
     result.data = await this.retailerModel.create({
       ...orderDto,
+      owner: buyerr,
+      numberOfPackets: numberOfFishPackagesOrdered,
     });
+
+    if ((result.data as any)._id) {
+      await this.logModel.create({
+        objectId: (result.data as any)._id,
+        transactionType: TransactionType.CREATE_ORDER,
+        newData: ProcessStatus.Pending,
+      });
+    }
 
     return result;
   }
 
   async getOrders(queries: QueryOrderParams) {
     const result = new BaseResult();
-    const { search, page, size, orderBy, desc, status } = queries;
+    const {
+      search,
+      page,
+      size,
+      orderBy,
+      desc,
+      status,
+      buyer,
+      disable,
+      isHavePackets,
+      listing,
+      seller,
+    } = queries;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<RetailerDocument> = {};
     // if (search) {
@@ -94,6 +111,30 @@ export class RetailerService {
     //     },
     //   ];
     // }
+
+    if (status) {
+      query.status = status;
+    }
+
+    if (buyer) {
+      query.buyer = buyer;
+    }
+
+    if (seller) {
+      query.seller = seller;
+    }
+
+    if (disable !== undefined) {
+      query.disable = disable;
+    }
+
+    if (listing !== undefined) {
+      query.listing = listing;
+    }
+
+    if (isHavePackets) {
+      query.numberOfPackets = { $gt: 0 };
+    }
 
     let sorter = {};
     if (orderBy) {
@@ -119,10 +160,10 @@ export class RetailerService {
       .populate({
         path: 'distributorId',
         populate: {
-          path: 'processorId',
+          path: 'fishProcessingId',
         },
       })
-      .sort(sorter)
+      .sort({ updatedAt: 'desc', _id: 'desc' })
       .skip(skipIndex)
       .limit(size);
     const total = await this.retailerModel.countDocuments(query);
@@ -138,11 +179,14 @@ export class RetailerService {
     const retailer = await this.retailerModel.findById(orderId).populate({
       path: 'distributorId',
       populate: {
-        path: 'processorId',
+        path: 'fishProcessingId',
         populate: {
-          path: 'fishFarmerId',
+          path: 'fishProcessorId',
           populate: {
-            path: 'farmedFishId',
+            path: 'fishFarmerId',
+            populate: {
+              path: 'farmedFishId',
+            },
           },
         },
       },
@@ -179,6 +223,12 @@ export class RetailerService {
       });
     }
 
+    await this.logModel.create({
+      objectId: orderId,
+      transactionType: TransactionType.UPDATE_ORDER_STATUS,
+      newData: status,
+    });
+
     result.data = await this.retailerModel.findByIdAndUpdate(
       orderId,
       {
@@ -188,6 +238,75 @@ export class RetailerService {
       },
       { new: true },
     );
+
+    return result;
+  }
+
+  async getProfileInventory(userId: string) {
+    const result = new BaseResult();
+
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const distributor = await this.retailerModel
+      .find({ owner: userId })
+      .countDocuments();
+
+    result.data = {
+      user,
+      distributor,
+    };
+
+    return result;
+  }
+
+  async updateOrder(orderId: string, updateOrderDto: UpdateOrderDto) {
+    const result = new BaseResult();
+
+    const retailer = await this.retailerModel.findById(orderId);
+    if (!retailer) {
+      throw new NotFoundException('Product not found');
+    }
+
+    result.data = await this.retailerModel.findByIdAndUpdate(
+      orderId,
+      {
+        $set: {
+          ...updateOrderDto,
+        },
+      },
+      { new: true },
+    );
+
+    let isDifferent = false;
+    Object.keys(updateOrderDto).forEach((key) => {
+      if (
+        retailer[key] !== updateOrderDto[key] &&
+        !noCompareKeys.includes(key)
+      ) {
+        isDifferent = true;
+      }
+    });
+
+    if (isDifferent) {
+      const { oldData, newData } = compareObjects(
+        retailer.toObject(),
+        updateOrderDto,
+      );
+
+      await this.logModel.create({
+        objectId: retailer.id,
+        owner: retailer.owner,
+        transactionType: TransactionType.UPDATE_PRODUCT,
+        logType: LogType.API,
+        message: `Update product status`,
+        oldData,
+        newData,
+        title: 'Update product status',
+      });
+    }
 
     return result;
   }

@@ -43,7 +43,7 @@ export class DistributorController {
     }
   }
 
-  @Roles(RoleType.Distributor, RoleType.FishProcessor)
+  @Roles(RoleType.Distributor, RoleType.FishProcessor, RoleType.Retailer)
   @Get('orders')
   public async GetOrders(@Res() res, @Query() queries: QueryOrderParams) {
     try {
@@ -72,7 +72,7 @@ export class DistributorController {
     }
   }
 
-  @Roles(RoleType.Distributor)
+  @Roles(RoleType.Distributor, RoleType.Retailer)
   @Put('/orders/:orderId/update')
   public async UpdateOrder(
     @Res() res,

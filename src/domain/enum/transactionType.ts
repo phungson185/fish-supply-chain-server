@@ -5,4 +5,5 @@ export enum TransactionType {
   UPDATE_FISH_GROWTH = 3,
   UPDATE_PROCESSING_CONTRACT = 4,
   UPDATE_PRODUCT = 5,
+  CREATE_ORDER = 6,
 }

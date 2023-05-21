@@ -28,6 +28,14 @@ export class Retailers {
 
   @AutoMap()
   @Prop()
+  speciesName: string;
+
+  @AutoMap()
+  @Prop()
+  description: string;
+
+  @AutoMap()
+  @Prop()
   retailerPurchaseOrderID: string;
 
   @AutoMap()
@@ -53,6 +61,38 @@ export class Retailers {
   @AutoMap()
   @Prop({ enum: ProcessStatus, default: ProcessStatus.Pending })
   status: number;
+
+  @AutoMap()
+  @Prop()
+  dateOfProcessing: Date;
+
+  @AutoMap()
+  @Prop()
+  dateOfExpiry: Date;
+
+  @AutoMap()
+  @Prop()
+  numberOfPackets: number;
+
+  @AutoMap()
+  @Prop()
+  filletsInPacket: number;
+
+  @AutoMap()
+  @Prop()
+  IPFSHash: string;
+
+  @AutoMap()
+  @Prop()
+  image: string;
+
+  @AutoMap()
+  @Prop({ default: false })
+  disable: boolean;
+
+  @AutoMap()
+  @Prop({ default: false })
+  listing: boolean;
 }
 
 export const RetailerSchema = SchemaFactory.createForClass(Retailers);
