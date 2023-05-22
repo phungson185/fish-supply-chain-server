@@ -93,6 +93,10 @@ export class FishProcessors {
   @AutoMap()
   @Prop()
   image: string;
+
+  @AutoMap()
+  @Prop()
+  transactionHash: string;
 }
 
 export const FishProcessorSchema = SchemaFactory.createForClass(FishProcessors);

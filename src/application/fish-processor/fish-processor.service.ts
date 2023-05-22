@@ -67,6 +67,7 @@ export class FishProcessorService {
       geographicOrigin,
       image,
       methodOfReproduction,
+      transactionHash,
     } = orderDto;
 
     const purcharser = await this.userModel.findOne({
@@ -100,6 +101,7 @@ export class FishProcessorService {
       geographicOrigin,
       image,
       methodOfReproduction,
+      transactionHash,
     });
 
     result.data = await this.fishProcessorModel.create({
@@ -109,7 +111,8 @@ export class FishProcessorService {
     if ((result.data as any)._id) {
       await this.logModel.create({
         objectId: (result.data as any)._id,
-        transactionType: TransactionType.UPDATE_ORDER_STATUS,
+        owner: purcharser,
+        transactionType: TransactionType.ORDER,
         newData: ProcessStatus.Pending,
       });
     }
@@ -181,7 +184,7 @@ export class FishProcessorService {
 
   async confirmOrder(orderId: string, confirmOrderDto: ConfirmOrderDto) {
     const result = new BaseResult();
-    const { status } = confirmOrderDto;
+    const { status, transactionHash } = confirmOrderDto;
 
     const fishProcessor = await this.fishProcessorModel
       .findById(orderId)
@@ -206,7 +209,7 @@ export class FishProcessorService {
 
     await this.logModel.create({
       objectId: orderId,
-      transactionType: TransactionType.UPDATE_ORDER_STATUS,
+      transactionType: TransactionType.ORDER,
       newData: status,
     });
 
@@ -215,6 +218,7 @@ export class FishProcessorService {
       {
         $set: {
           status,
+          transactionHash,
         },
       },
       { new: true },
@@ -267,7 +271,7 @@ export class FishProcessorService {
     await this.logModel.create({
       objectId: processingContract,
       owner: userId,
-      transactionType: TransactionType.DEPLOY_CONTRACT,
+      transactionType: TransactionType.CONTRACT,
       logType: LogType.BLOCKCHAIN,
       message: `Deploy ${numberOfPackets} packets of ${processedSpeciesName} fish`,
       oldData: oldData,
@@ -297,6 +301,12 @@ export class FishProcessorService {
 
     let isDifferent = false;
     Object.keys(body).forEach((key) => {
+      if (['dateOfProcessing', 'dateOfExpiry'].includes(key)) {
+        if (Number(fishProcessing[key]) !== Number(body[key])) {
+          isDifferent = true;
+        }
+        return;
+      }
       if (fishProcessing[key] !== body[key] && !noCompareKeys.includes(key)) {
         isDifferent = true;
       }
@@ -312,7 +322,7 @@ export class FishProcessorService {
         objectId: fishProcessing.processingContract,
         transactionHash: body.transactionHash,
         owner: fishProcessing.fishProcessor,
-        transactionType: TransactionType.UPDATE_PROCESSING_CONTRACT,
+        transactionType: TransactionType.CONTRACT,
         logType: LogType.BLOCKCHAIN,
         message: `Update processing contract`,
         oldData,

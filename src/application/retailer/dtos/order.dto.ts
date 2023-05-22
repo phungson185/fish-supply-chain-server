@@ -54,4 +54,7 @@ export class OrderDto {
 
   @ApiProperty()
   listing: boolean;
+
+  @ApiProperty()
+  transactionHash: string;
 }

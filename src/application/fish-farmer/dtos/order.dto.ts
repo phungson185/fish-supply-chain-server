@@ -20,4 +20,7 @@ export class OrderDto {
   @ApiProperty()
   @Transform(({ value }) => new Number(value))
   fishSeedsPurchaseOrderDetailsStatus: number;
+
+  @ApiProperty()
+  transactionHash: string;
 }

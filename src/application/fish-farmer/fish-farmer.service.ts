@@ -92,6 +92,7 @@ export class FishFarmerService {
       speciesName: farmedFish.speciesName,
       IPFSHash: farmedFish.IPFSHash,
       totalNumberOfFish: orderDto.numberOfFishSeedsOrdered,
+      transactionHash: orderDto.transactionHash,
     });
 
     result.data = await this.fishFarmerModel.create({
@@ -101,7 +102,7 @@ export class FishFarmerService {
     if ((result.data as any)._id) {
       await this.logModel.create({
         objectId: (result.data as any)._id,
-        transactionType: TransactionType.UPDATE_ORDER_STATUS,
+        transactionType: TransactionType.ORDER,
         newData: ProcessStatus.Pending,
       });
     }
@@ -207,7 +208,8 @@ export class FishFarmerService {
 
   async confirmOrder(orderId: string, confirmOrderDto: ConfirmOrderDto) {
     const result = new BaseResult();
-    const { status, numberOfFishSeedsAvailable } = confirmOrderDto;
+    const { status, numberOfFishSeedsAvailable, transactionHash } =
+      confirmOrderDto;
 
     const fishFarmer = await this.fishFarmerModel.findById(orderId);
     if (!fishFarmer) {
@@ -238,7 +240,7 @@ export class FishFarmerService {
 
     await this.logModel.create({
       objectId: orderId,
-      transactionType: TransactionType.UPDATE_ORDER_STATUS,
+      transactionType: TransactionType.ORDER,
       newData: status,
     });
 
@@ -257,6 +259,7 @@ export class FishFarmerService {
       {
         $set: {
           fishSeedsPurchaseOrderDetailsStatus: status,
+          transactionHash,
         },
       },
       { new: true },
@@ -312,13 +315,13 @@ export class FishFarmerService {
 
       await this.logModel.create({
         objectId: orderId,
-        transactionType: TransactionType.UPDATE_FISH_GROWTH,
+        transactionType: TransactionType.FISH_GROWTH,
         logType: LogType.BLOCKCHAIN,
         oldData,
         newData,
         transactionHash,
         owner: userId,
-        message: `Update fish growth details`,
+        message: `Update ${growthDetail.speciesName} growth details`,
         title: `Update fish growth details`,
       });
 

@@ -58,6 +58,8 @@ export class DistributorService {
       fishProcessingId,
     } = orderDto;
 
+    console.log(orderDto);
+
     const purcharser = await this.userModel.findById(orderer);
     if (!purcharser) {
       throw new NotFoundException('Purchaser not found');
@@ -84,7 +86,7 @@ export class DistributorService {
     if ((result.data as any)._id) {
       await this.logModel.create({
         objectId: (result.data as any)._id,
-        transactionType: TransactionType.UPDATE_ORDER_STATUS,
+        transactionType: TransactionType.ORDER,
         newData: ProcessStatus.Pending,
       });
     }
@@ -178,7 +180,7 @@ export class DistributorService {
 
   async confirmOrder(orderId: string, confirmOrderDto: ConfirmOrderDto) {
     const result = new BaseResult();
-    const { status } = confirmOrderDto;
+    const { status, transactionHash } = confirmOrderDto;
 
     const distributor = await this.distributorModel.findById(orderId).populate({
       path: 'fishProcessingId',
@@ -224,7 +226,7 @@ export class DistributorService {
 
     await this.logModel.create({
       objectId: orderId,
-      transactionType: TransactionType.UPDATE_ORDER_STATUS,
+      transactionType: TransactionType.ORDER,
       newData: status,
     });
 
@@ -233,6 +235,7 @@ export class DistributorService {
       {
         $set: {
           status,
+          transactionHash,
         },
       },
       { new: true },
@@ -278,7 +281,7 @@ export class DistributorService {
       await this.logModel.create({
         objectId: distributor.id,
         owner: distributor.owner,
-        transactionType: TransactionType.UPDATE_PRODUCT,
+        transactionType: TransactionType.PRODUCT,
         logType: LogType.API,
         message: `Update product status`,
         oldData,

@@ -37,4 +37,7 @@ export class OrderDto {
 
   @ApiProperty()
   image: string;
+
+  @ApiProperty()
+  transactionHash: string;
 }

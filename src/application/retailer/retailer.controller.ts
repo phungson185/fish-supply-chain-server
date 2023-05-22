@@ -71,7 +71,7 @@ export class RetailerController {
     }
   }
 
-  @Roles(RoleType.Distributor)
+  @Roles(RoleType.Retailer)
   @Put('/orders/:orderId/update')
   public async UpdateOrder(
     @Res() res,

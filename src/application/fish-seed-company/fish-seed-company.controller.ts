@@ -134,9 +134,14 @@ export class FishSeedCompanyController {
 
   @Roles(RoleType.FishSeedCompany)
   @Post('addFishSeed')
-  public async addFishSeed(@Res() res, @Body() addFishSeedDto: AddFishSeedDto) {
+  public async addFishSeed(
+    @Res() res,
+    @Req() req,
+    @Body() addFishSeedDto: AddFishSeedDto,
+  ) {
     try {
       const result = await this.fishSeedCompanyService.addFishSeed(
+        req.user._id,
         addFishSeedDto,
       );
       return res.status(HttpStatus.OK).json(result);

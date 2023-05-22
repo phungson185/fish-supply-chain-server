@@ -93,6 +93,10 @@ export class Retailers {
   @AutoMap()
   @Prop({ default: false })
   listing: boolean;
+
+  @AutoMap()
+  @Prop()
+  transactionHash: string;
 }
 
 export const RetailerSchema = SchemaFactory.createForClass(Retailers);

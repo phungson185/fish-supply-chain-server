@@ -6,4 +6,7 @@ export class ConfirmOrderDto {
 
   @ApiProperty()
   numberOfFishSeedsAvailable: number;
+
+  @ApiProperty()
+  transactionHash: string;
 }

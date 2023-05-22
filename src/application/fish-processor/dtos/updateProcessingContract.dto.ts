@@ -12,4 +12,32 @@ export class UpdateProcessingContractDto extends CreateProcessingContractDto {
 
   @ApiProperty()
   listing: boolean;
+
+  @ApiProperty()
+  processedSpeciesName: string;
+
+  @ApiProperty()
+  IPFSHash: string;
+
+  @ApiProperty()
+  @Transform(({ value }) => new Date(value))
+  dateOfProcessing: number;
+
+  @ApiProperty()
+  @Transform(({ value }) => new Date(value))
+  dateOfExpiry: number;
+
+  @ApiProperty()
+  @Transform(({ value }) => Number(value))
+  filletsInPacket: number;
+
+  @ApiProperty()
+  @Transform(({ value }) => Number(value))
+  numberOfPackets: number;
+
+  @ApiProperty()
+  image: string;
+
+  @ApiProperty()
+  description: string;
 }

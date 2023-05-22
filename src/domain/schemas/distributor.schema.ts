@@ -99,6 +99,10 @@ export class Distributors {
   @AutoMap()
   @Prop({ default: false })
   listing: boolean;
+
+  @AutoMap()
+  @Prop()
+  transactionHash: string;
 }
 
 export const DistributorSchema = SchemaFactory.createForClass(Distributors);

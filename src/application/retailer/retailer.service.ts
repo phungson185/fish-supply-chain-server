@@ -76,7 +76,7 @@ export class RetailerService {
     if ((result.data as any)._id) {
       await this.logModel.create({
         objectId: (result.data as any)._id,
-        transactionType: TransactionType.CREATE_ORDER,
+        transactionType: TransactionType.ORDER,
         newData: ProcessStatus.Pending,
       });
     }
@@ -174,7 +174,7 @@ export class RetailerService {
 
   async confirmOrder(orderId: string, confirmOrderDto: ConfirmOrderDto) {
     const result = new BaseResult();
-    const { status } = confirmOrderDto;
+    const { status, transactionHash } = confirmOrderDto;
 
     const retailer = await this.retailerModel.findById(orderId).populate({
       path: 'distributorId',
@@ -225,7 +225,7 @@ export class RetailerService {
 
     await this.logModel.create({
       objectId: orderId,
-      transactionType: TransactionType.UPDATE_ORDER_STATUS,
+      transactionType: TransactionType.ORDER,
       newData: status,
     });
 
@@ -234,6 +234,7 @@ export class RetailerService {
       {
         $set: {
           status,
+          transactionHash,
         },
       },
       { new: true },
@@ -299,7 +300,7 @@ export class RetailerService {
       await this.logModel.create({
         objectId: retailer.id,
         owner: retailer.owner,
-        transactionType: TransactionType.UPDATE_PRODUCT,
+        transactionType: TransactionType.PRODUCT,
         logType: LogType.API,
         message: `Update product status`,
         oldData,

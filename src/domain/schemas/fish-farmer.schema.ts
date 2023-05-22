@@ -102,6 +102,10 @@ export class FishFarmers {
   @AutoMap()
   @Prop()
   farmedFishGrowthDetailsID: string;
+
+  @AutoMap()
+  @Prop()
+  transactionHash: string;
 }
 
 export const FishFarmerSchema = SchemaFactory.createForClass(FishFarmers);

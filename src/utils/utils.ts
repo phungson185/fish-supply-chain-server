@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 const keyMap = {
   title: 'Title',
   subTitle: 'Sub title',
@@ -15,9 +17,26 @@ const keyMap = {
   fishWeight: 'Fish weight',
   totalNumberOfFish: 'Total number of fish',
   orderable: 'Orderable',
+  quantity: 'Quantity',
+  fishProcessorId: "Fish processor's ID",
+  processedSpeciesName: 'Processed species name',
+  registrationContract: 'Registration contract',
+  fishProcessor: 'Fish processor',
+  dateOfProcessing: 'Date of processing',
+  dateOfExpiry: 'Date of expiry',
+  farmedFishPurchaseOrderID: 'Farmed fish purchase order ID',
+  filletsInPacket: 'Fillets in packet',
+  numberOfPackets: 'Number of packets',
+  processingContract: 'Processing contract',
+  processedSpeciesname: 'Processed species name',
+  listing: 'Listing',
 };
 
-export const noCompareKeys = ['farmedFishGrowthDetailsID', 'transactionHash'];
+export const noCompareKeys = [
+  'farmedFishGrowthDetailsID',
+  'farmedFishPurchaseOrderID',
+  'transactionHash',
+];
 
 export const handleMapGeographicOrigin = (geographicOrigin: number) => {
   switch (geographicOrigin) {
@@ -49,6 +68,14 @@ export function compareObjects(oldObj, newObj) {
 
   for (const key in oldObj) {
     if (newObj.hasOwnProperty(key)) {
+      if (['dateOfProcessing', 'dateOfExpiry'].includes(key)) {
+        if (Number(oldObj[key]) !== Number(newObj[key])) {
+          oldData += `<div>${keyMap[key]}: ${new Date(oldObj[key])}</div>`;
+          newData += `<div>${keyMap[key]}: ${new Date(newObj[key])}</div>`;
+        }
+        continue;
+      }
+
       if (oldObj[key] !== newObj[key] && !noCompareKeys.includes(key)) {
         if (key === 'geographicOrigin') {
           oldData += `<div>${keyMap[key]}: ${handleMapGeographicOrigin(
@@ -74,6 +101,13 @@ export function compareObjects(oldObj, newObj) {
 
   for (const key in newObj) {
     if (!oldObj.hasOwnProperty(key) && !noCompareKeys.includes(key)) {
+      if (['dateOfProcessing', 'dateOfExpiry'].includes(key)) {
+        if (Number(oldObj[key]) !== Number(newObj[key])) {
+          newData += `<div>${keyMap[key]}: ${new Date(newObj[key])}</div>`;
+        }
+        continue;
+      }
+
       if (key === 'geographicOrigin') {
         oldData += `<div>${keyMap[key]}: ${handleMapGeographicOrigin(
           oldObj[key],

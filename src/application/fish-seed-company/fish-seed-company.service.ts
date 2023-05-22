@@ -70,10 +70,9 @@ export class FishSeedCompanyService {
     await this.logModel.create({
       objectId: farmedFishContractDto.farmedFishContract,
       owner: farmedFishContractDto.owner,
-      transactionType: TransactionType.DEPLOY_CONTRACT,
+      transactionType: TransactionType.CONTRACT,
       logType: LogType.BLOCKCHAIN,
       message: `Deploy ${farmedFishContractDto.numberOfFishSeedsAvailable}kg fish seed with contract ${farmedFishContractDto.farmedFishContract}`,
-      oldData: oldData,
       newData: newData,
       title: 'Deploy fish seed',
     });
@@ -200,7 +199,7 @@ export class FishSeedCompanyService {
         objectId: farmedFish.farmedFishContract,
         transactionHash: updateFarmedFishContractDto.transactionHash,
         owner: farmedFish.owner,
-        transactionType: TransactionType.UPDATE_FISH_SEED,
+        transactionType: TransactionType.CONTRACT,
         logType: LogType.BLOCKCHAIN,
         message: `Update farmed fish contract ${farmedFish.farmedFishContract}`,
         oldData,
@@ -226,12 +225,25 @@ export class FishSeedCompanyService {
     return result;
   }
 
-  async addFishSeed(addFishSeedDto: AddFishSeedDto) {
+  async addFishSeed(userId: string, addFishSeedDto: AddFishSeedDto) {
     const result = new BaseResult();
 
-    result.data = this.fishSeedModel.create({
+    result.data = await this.fishSeedModel.create({
       ...addFishSeedDto,
     });
+
+    const { oldData, newData } = compareObjects({}, addFishSeedDto);
+
+    if ((result.data as any)._id) {
+      await this.logModel.create({
+        objectId: (result.data as any)._id,
+        transactionType: TransactionType.FISH_SEED,
+        owner: userId,
+        newData: newData,
+        title: 'Add fish seed',
+        message: `Add fish seed with name ${addFishSeedDto.speciesName}`,
+      });
+    }
 
     return result;
   }
@@ -307,7 +319,7 @@ export class FishSeedCompanyService {
       await this.logModel.create({
         objectId: item.id,
         owner: userId,
-        transactionType: TransactionType.UPDATE_FISH_SEED,
+        transactionType: TransactionType.FISH_SEED,
         logType: LogType.API,
         message: `Updated fish seed ${item.speciesName}`,
         oldData,
