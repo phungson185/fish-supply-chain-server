@@ -31,7 +31,8 @@ import {
   UpdateOrderDto,
 } from './dtos';
 import { compareObjects, noCompareKeys } from 'src/utils/utils';
-
+import { AppConfiguration, InjectAppConfig } from 'src/config/configuration';
+import * as qrcode from 'qrcode';
 @Injectable()
 export class RetailerService {
   constructor(
@@ -45,6 +46,7 @@ export class RetailerService {
     private readonly batchModel: Model<BatchDocument>,
     @InjectModel(Log.name)
     private readonly logModel: Model<LogDocument>,
+    @InjectAppConfig() private appConfig: AppConfiguration,
   ) {}
 
   async createOrder(orderDto: OrderDto) {
@@ -210,7 +212,7 @@ export class RetailerService {
     }
 
     if (status == ProcessStatus.Received) {
-      await this.batchModel.create({
+      const batch = await this.batchModel.create({
         farmedFishId:
           retailer.distributorId.fishProcessingId.fishProcessorId.fishFarmerId
             .farmedFishId,
@@ -219,8 +221,21 @@ export class RetailerService {
         fishProcessingId: retailer.distributorId.fishProcessingId,
         distributorId: retailer.distributorId,
         retailerId: retailer,
-        type: BatchType.FishSeedCompany,
+        lastChainPoint: 'retailerId',
+        success: true,
       });
+
+      let qrCodeString = await qrcode.toDataURL(
+        `${this.appConfig.qrCodePrefixUrl}/${batch._id}`,
+        {
+          type: 'image/webp',
+          margin: 1,
+          width: 200,
+        },
+      );
+
+      batch.qrCode = qrCodeString;
+      await batch.save();
     }
 
     await this.logModel.create({
@@ -251,13 +266,13 @@ export class RetailerService {
       throw new NotFoundException('User not found');
     }
 
-    const distributor = await this.retailerModel
+    const retailer = await this.retailerModel
       .find({ owner: userId })
       .countDocuments();
 
     result.data = {
       user,
-      distributor,
+      retailer,
     };
 
     return result;

@@ -41,6 +41,10 @@ export class FishProcessing {
   fishProcessor: Users;
 
   @AutoMap()
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Users' })
+  owner: Users;
+
+  @AutoMap()
   @Prop()
   IPFSHash: string;
 

@@ -31,6 +31,8 @@ import {
   UpdateGrowthDetailsDto,
 } from './dtos';
 import { compareObjects, noCompareKeys } from 'src/utils/utils';
+import { AppConfiguration, InjectAppConfig } from 'src/config/configuration';
+import * as qrcode from 'qrcode';
 
 @Injectable()
 export class FishFarmerService {
@@ -45,6 +47,7 @@ export class FishFarmerService {
     private readonly batchModel: Model<BatchDocument>,
     @InjectModel(Log.name)
     private readonly logModel: Model<LogDocument>,
+    @InjectAppConfig() private appConfig: AppConfiguration,
   ) {}
 
   async createOrder(orderDto: OrderDto) {
@@ -231,11 +234,23 @@ export class FishFarmerService {
     }
 
     if (status == ProcessStatus.Received) {
-      await this.batchModel.create({
+      const batch = await this.batchModel.create({
         farmedFishId: fishFarmer.farmedFishId,
         fishFarmerId: fishFarmer._id,
-        type: BatchType.FishSeedCompany,
+        lastChainPoint: 'fishFarmerId',
       });
+
+      let qrCodeString = await qrcode.toDataURL(
+        `${this.appConfig.qrCodePrefixUrl}/${batch._id}`,
+        {
+          type: 'image/webp',
+          margin: 1,
+          width: 200,
+        },
+      );
+
+      batch.qrCode = qrCodeString;
+      await batch.save();
     }
 
     await this.logModel.create({

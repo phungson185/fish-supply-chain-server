@@ -26,6 +26,9 @@ import { BatchDto } from './dtos/batch.dto';
 import { TransactionType } from 'src/domain/enum/transactionType';
 import { LogType } from 'src/domain/enum';
 import { compareObjects, noCompareKeys } from 'src/utils/utils';
+import * as qrcode from 'qrcode';
+import { AppConfiguration, InjectAppConfig } from 'src/config/configuration';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class FishSeedCompanyService {
@@ -40,6 +43,7 @@ export class FishSeedCompanyService {
     private readonly logModel: Model<LogDocument>,
     @InjectModel(Users.name)
     private readonly userModel: Model<UserDocument>,
+    @InjectAppConfig() private appConfig: AppConfiguration,
     private readonly queryBus: QueryBus,
   ) {}
 
@@ -218,10 +222,24 @@ export class FishSeedCompanyService {
   async createBatch(batchDto: BatchDto) {
     const result = new BaseResult();
 
-    result.data = await this.batchModel.create({
+    const batch = await this.batchModel.create({
       ...batchDto,
+      lastChainPoint: 'farmedFishId',
     });
 
+    let qrCodeString = await qrcode.toDataURL(
+      `${this.appConfig.qrCodePrefixUrl}/${batch._id}`,
+      {
+        type: 'image/webp',
+        margin: 1,
+        width: 200,
+      },
+    );
+
+    batch.qrCode = qrCodeString;
+    await batch.save();
+
+    result.data = batch;
     return result;
   }
 

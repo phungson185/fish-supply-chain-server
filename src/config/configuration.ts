@@ -17,6 +17,7 @@ export const appConfiguration = registerAs('app', () => {
     web3: {
       httpUrl: process.env.WEB3_HTTP_URL,
     },
+    qrCodePrefixUrl: process.env.QR_CODE_PREFIX_URL,
   };
 });
 

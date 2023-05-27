@@ -14,13 +14,13 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { BatchService } from './batch.service';
 import { BatchQueryDto } from './dtos/batch.query,dto';
 
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth('JWT')
 @Controller('batchs')
 @ApiTags('BatchEndpoints')
 export class BatchController {
   constructor(private batchService: BatchService) {}
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT')
   @Get()
   public async GetBatchs(
     @Res() res,
@@ -36,11 +36,7 @@ export class BatchController {
   }
 
   @Get(':id')
-  public async GetBatch(
-    @Res() res,
-    @Req() req,
-    @Param('id') id: string,
-  ) {
+  public async GetBatch(@Res() res, @Req() req, @Param('id') id: string) {
     try {
       const result = await this.batchService.getBatch(id);
       return res.status(HttpStatus.OK).json(result);

@@ -98,6 +98,9 @@ export class BatchService {
           {
             path: 'fishProcessor',
           },
+          {
+            path: 'owner',
+          },
         ],
       })
       .populate({
@@ -163,6 +166,9 @@ export class BatchService {
           },
           {
             path: 'fishProcessor',
+          },
+          {
+            path: 'owner',
           },
         ],
       })

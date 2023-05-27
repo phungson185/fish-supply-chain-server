@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
-  NotFoundException,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
@@ -19,20 +19,20 @@ import {
   Distributors,
   FishProcessing,
   FishProcessingDocument,
-  FishProcessorDocument,
-  FishProcessors,
   Log,
   LogDocument,
   UserDocument,
   Users,
 } from 'src/domain/schemas';
+import { compareObjects, noCompareKeys } from 'src/utils/utils';
 import {
   ConfirmOrderDto,
   OrderDto,
   QueryOrderParams,
   UpdateOrderDto,
 } from './dtos';
-import { compareObjects, noCompareKeys } from 'src/utils/utils';
+import { AppConfiguration, InjectAppConfig } from 'src/config/configuration';
+import * as qrcode from 'qrcode';
 
 @Injectable()
 export class DistributorService {
@@ -47,6 +47,7 @@ export class DistributorService {
     private readonly batchModel: Model<BatchDocument>,
     @InjectModel(Log.name)
     private readonly logModel: Model<LogDocument>,
+    @InjectAppConfig() private appConfig: AppConfiguration,
   ) {}
 
   async createOrder(orderDto: OrderDto) {
@@ -213,15 +214,27 @@ export class DistributorService {
     }
 
     if (status == ProcessStatus.Received) {
-      await this.batchModel.create({
+      const batch = await this.batchModel.create({
         farmedFishId:
           distributor.fishProcessingId.fishProcessorId.fishFarmerId
             .farmedFishId,
         fishFarmerId: distributor.fishProcessingId.fishProcessorId.fishFarmerId,
         fishProcessingId: distributor.fishProcessingId,
         distributorId: distributor.id,
-        type: BatchType.FishSeedCompany,
+        lastChainPoint: 'distributorId',
       });
+
+      let qrCodeString = await qrcode.toDataURL(
+        `${this.appConfig.qrCodePrefixUrl}/${batch._id}`,
+        {
+          type: 'image/webp',
+          margin: 1,
+          width: 200,
+        },
+      );
+
+      batch.qrCode = qrCodeString;
+      await batch.save();
     }
 
     await this.logModel.create({

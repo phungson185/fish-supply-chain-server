@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { HttpService, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
@@ -15,6 +15,8 @@ import {
 } from 'src/domain/schemas';
 import { FishSeedCompanyController } from './fish-seed-company.controller';
 import { FishSeedCompanyService } from './fish-seed-company.service';
+import { ConfigModule } from '@nestjs/config';
+import { appConfiguration } from 'src/config/configuration';
 
 @Module({
   imports: [

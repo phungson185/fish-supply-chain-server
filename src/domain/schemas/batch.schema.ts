@@ -62,8 +62,16 @@ export class Batchs {
   retailerId: Retailers;
 
   @AutoMap()
-  @Prop({ type: Number, enum: BatchType, required: true })
-  type: number;
+  @Prop()
+  qrCode: string;
+
+  @AutoMap()
+  @Prop()
+  lastChainPoint: string;
+
+  @AutoMap()
+  @Prop({ default: false })
+  success: boolean;
 }
 
 export const BatchSchema = SchemaFactory.createForClass(Batchs);
