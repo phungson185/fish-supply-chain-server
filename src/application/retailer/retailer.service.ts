@@ -267,7 +267,12 @@ export class RetailerService {
     }
 
     const retailer = await this.retailerModel
-      .find({ owner: userId })
+      .find({
+        owner: userId,
+        status: ProcessStatus.Received,
+        disable: false,
+        listing: true,
+      })
       .countDocuments();
 
     result.data = {

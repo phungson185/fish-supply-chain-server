@@ -462,7 +462,12 @@ export class FishProcessorService {
     }
 
     const fishProcessing = await this.fishProcessingModel
-      .find({ fishProcessor: userId })
+      .find({
+        fishProcessor: userId,
+        status: ProcessStatus.Received,
+        disable: false,
+        listing: true,
+      })
       .countDocuments();
 
     result.data = {

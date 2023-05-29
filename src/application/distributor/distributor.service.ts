@@ -59,8 +59,6 @@ export class DistributorService {
       fishProcessingId,
     } = orderDto;
 
-    console.log(orderDto);
-
     const purcharser = await this.userModel.findById(orderer);
     if (!purcharser) {
       throw new NotFoundException('Purchaser not found');
@@ -315,7 +313,12 @@ export class DistributorService {
     }
 
     const distributor = await this.distributorModel
-      .find({ owner: userId })
+      .find({
+        owner: userId,
+        status: ProcessStatus.Received,
+        disable: false,
+        listing: true,
+      })
       .countDocuments();
 
     result.data = {
