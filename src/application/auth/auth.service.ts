@@ -6,6 +6,7 @@ import { bufferToHex } from 'ethereumjs-utils';
 import { Model } from 'mongoose';
 import { BaseResult } from 'src/domain/dtos';
 
+import { NotFoundException } from '@nestjs/common';
 import { UserDocument, Users } from '../../domain/schemas';
 import { GetTokenDto, SyncRoleDto } from './dtos';
 
@@ -20,10 +21,16 @@ export class AuthService {
     const result = new BaseResult();
 
     const user = await this.userModel.findOne({ address }).exec();
+
+    if (user && !user.active) {
+      throw new NotFoundException('User not found');
+    }
+
     if (user) {
       result.data = user;
       return result;
     }
+
     const newUser = new this.userModel({
       nonce: Math.floor(Math.random() * 1000000),
       address,
@@ -59,8 +66,13 @@ export class AuthService {
   async generateToken(tokenDto: GetTokenDto) {
     const result = new BaseResult();
     const user = await this.userModel
-      .findOne({ address: tokenDto.address })
+      .findOne({ address: tokenDto.address, active: true })
       .exec();
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     const isVerified = this.verifySignature({
       user,
       signature: tokenDto.signature,

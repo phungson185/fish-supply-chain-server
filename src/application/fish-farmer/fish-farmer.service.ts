@@ -119,8 +119,8 @@ export class FishFarmerService {
       search,
       page,
       size,
-      orderBy,
-      desc,
+      orderBy = 'updatedAt',
+      desc = true,
       id,
       fishSeedsPurchaseOrderDetailsStatus,
       fishSeedsPurchaser,
@@ -139,22 +139,40 @@ export class FishFarmerService {
     let sorter = {};
     if (orderBy) {
       switch (orderBy) {
-        case 'numberOfFishSeedsOrdered':
+        case 'speciesName':
           sorter = desc
             ? { speciesName: 'desc', _id: 'desc' }
             : { speciesName: 'asc', _id: 'asc' };
           break;
-
+        case 'geographicOrigin':
+          sorter = desc
+            ? { geographicOrigin: 'desc', _id: 'desc' }
+            : { geographicOrigin: 'asc', _id: 'asc' };
+          break;
+        case 'methodOfReproduction':
+          sorter = desc
+            ? { methodOfReproduction: 'desc', _id: 'desc' }
+            : { methodOfReproduction: 'asc', _id: 'asc' };
+          break;
+        case 'waterTemperature':
+          sorter = desc
+            ? { waterTemperature: 'desc', _id: 'desc' }
+            : { waterTemperature: 'asc', _id: 'asc' };
+          break;
+        case 'numberOfFishSeedsOrdered':
+          sorter = desc
+            ? { numberOfFishSeedsOrdered: 'desc', _id: 'desc' }
+            : { numberOfFishSeedsOrdered: 'asc', _id: 'asc' };
+          break;
         case 'updatedAt':
           sorter = desc
             ? { updatedAt: 'desc', _id: 'desc' }
             : { updatedAt: 'asc', _id: 'asc' };
           break;
-
         default:
           sorter = desc
-            ? { updatedAt: 'desc', _id: 'desc' }
-            : { updatedAt: 'asc', _id: 'asc' };
+            ? { createdAt: 'desc', _id: 'desc' }
+            : { createdAt: 'asc', _id: 'asc' };
           break;
       }
     }

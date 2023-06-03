@@ -93,7 +93,7 @@ export class FishSeedCompanyService {
 
   async getFarmedFishContracts(queries: BaseQueryParams) {
     const result = new BaseResult();
-    const { search, page, size, orderBy, desc } = queries;
+    const { search, page, size, orderBy = 'updatedAt', desc = true } = queries;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<FarmedFishDocument> = {};
     if (search) {
@@ -103,12 +103,6 @@ export class FishSeedCompanyService {
         },
         {
           speciesName: { $regex: search, $options: 'i' },
-        },
-        {
-          geographicOrigin: { $regex: search, $options: 'i' },
-        },
-        {
-          aquacultureWaterType: { $regex: search, $options: 'i' },
         },
       ];
     }
@@ -268,14 +262,55 @@ export class FishSeedCompanyService {
 
   async getFishSeeds(queries: QueryFishSeed) {
     const result = new BaseResult();
-    const { search, page, size, orderBy, desc } = queries;
+    const { search, page, size, orderBy = 'updatedAt', desc = true } = queries;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<FishSeedDocument> = {};
     if (search) {
+      query.$or = [
+        {
+          speciesName: { $regex: search, $options: 'i' },
+        },
+      ];
     }
 
     let sorter = {};
     if (orderBy) {
+      switch (orderBy) {
+        case 'speciesName':
+          sorter = desc
+            ? { speciesName: 'desc', _id: 'desc' }
+            : { speciesName: 'asc', _id: 'asc' };
+          break;
+        case 'geographicOrigin':
+          sorter = desc
+            ? { geographicOrigin: 'desc', _id: 'desc' }
+            : { geographicOrigin: 'asc', _id: 'asc' };
+          break;
+        case 'methodOfReproduction':
+          sorter = desc
+            ? { methodOfReproduction: 'desc', _id: 'desc' }
+            : { methodOfReproduction: 'asc', _id: 'asc' };
+          break;
+        case 'waterTemperature':
+          sorter = desc
+            ? { waterTemperature: 'desc', _id: 'desc' }
+            : { waterTemperature: 'asc', _id: 'asc' };
+          break;
+        case 'quantity':
+          sorter = desc
+            ? { quantity: 'desc', _id: 'desc' }
+            : { quantity: 'asc', _id: 'asc' };
+          break;
+        case 'updatedAt':
+          sorter = desc
+            ? { updatedAt: 'desc', _id: 'desc' }
+            : { updatedAt: 'asc', _id: 'asc' };
+        default:
+          sorter = desc
+            ? { createdAt: 'desc', _id: 'desc' }
+            : { createdAt: 'asc', _id: 'asc' };
+          break;
+      }
     }
     const items = await this.fishSeedModel
       .find(query)

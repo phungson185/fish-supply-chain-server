@@ -61,6 +61,10 @@ export class Users {
   @AutoMap()
   @Prop({ type: String, enum: RoleType, default: RoleType.Consumer })
   role: string;
+
+  @AutoMap()
+  @Prop({ default: true })
+  active: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(Users);
