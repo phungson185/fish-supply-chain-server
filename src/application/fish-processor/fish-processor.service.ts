@@ -128,16 +128,13 @@ export class FishProcessorService {
     const { search, page, size, orderBy, desc, status } = queries;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<FishProcessorDocument> = {};
-    // if (search) {
-    //   query.$or = [
-    //     {
-    //       fishSeedsPurchaser: { $regex: search, $options: 'i' },
-    //     },
-    //     {
-    //       fishSeedsSeller: { $regex: search, $options: 'i' },
-    //     },
-    //   ];
-    // }
+    if (search) {
+      query.$or = [
+        {
+          speciesName: { $regex: search, $options: 'i' },
+        },
+      ];
+    }
 
     let sorter = {};
     if (orderBy) {
@@ -147,11 +144,25 @@ export class FishProcessorService {
             ? { speciesName: 'desc', _id: 'desc' }
             : { speciesName: 'asc', _id: 'asc' };
           break;
+        case 'geographicOrigin':
+          sorter = desc
+            ? { geographicOrigin: 'desc', _id: 'desc' }
+            : { geographicOrigin: 'asc', _id: 'asc' };
+          break;
+        case 'methodOfReproduction':
+          sorter = desc
+            ? { methodOfReproduction: 'desc', _id: 'desc' }
+            : { methodOfReproduction: 'asc', _id: 'asc' };
+          break;
         case 'numberOfFishOrdered':
           sorter = desc
             ? { numberOfFishOrdered: 'desc', _id: 'desc' }
             : { numberOfFishOrdered: 'asc', _id: 'asc' };
           break;
+        case 'updatedAt':
+          sorter = desc
+            ? { updatedAt: 'desc', _id: 'desc' }
+            : { updatedAt: 'asc', _id: 'asc' };
         default:
           sorter = desc
             ? { createdAt: 'desc', _id: 'desc' }
@@ -176,7 +187,7 @@ export class FishProcessorService {
           },
         ],
       })
-      .sort({ createdAt: 'desc', _id: 'desc' })
+      .sort(sorter)
       .skip(skipIndex)
       .limit(size);
     const total = await this.fishProcessorModel.countDocuments(query);
@@ -301,6 +312,9 @@ export class FishProcessorService {
 
     batch.qrCode = qrCodeString;
     await batch.save();
+
+    fishProcessing.qrCode = qrCodeString;
+    await fishProcessing.save();
 
     return result;
   }

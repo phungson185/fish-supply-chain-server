@@ -144,6 +144,16 @@ export class FishFarmerService {
             ? { speciesName: 'desc', _id: 'desc' }
             : { speciesName: 'asc', _id: 'asc' };
           break;
+        case 'totalNumberOfFish':
+          sorter = desc
+            ? { totalNumberOfFish: 'desc', _id: 'desc' }
+            : { totalNumberOfFish: 'asc', _id: 'asc' };
+          break;
+        case 'waterTemperature':
+          sorter = desc
+            ? { waterTemperature: 'desc', _id: 'desc' }
+            : { waterTemperature: 'asc', _id: 'asc' };
+          break;
         case 'geographicOrigin':
           sorter = desc
             ? { geographicOrigin: 'desc', _id: 'desc' }
@@ -154,15 +164,10 @@ export class FishFarmerService {
             ? { methodOfReproduction: 'desc', _id: 'desc' }
             : { methodOfReproduction: 'asc', _id: 'asc' };
           break;
-        case 'waterTemperature':
+        case 'fishWeight':
           sorter = desc
-            ? { waterTemperature: 'desc', _id: 'desc' }
-            : { waterTemperature: 'asc', _id: 'asc' };
-          break;
-        case 'numberOfFishSeedsOrdered':
-          sorter = desc
-            ? { numberOfFishSeedsOrdered: 'desc', _id: 'desc' }
-            : { numberOfFishSeedsOrdered: 'asc', _id: 'asc' };
+            ? { fishWeight: 'desc', _id: 'desc' }
+            : { fishWeight: 'asc', _id: 'asc' };
           break;
         case 'updatedAt':
           sorter = desc
@@ -201,7 +206,7 @@ export class FishFarmerService {
       .populate('farmedFishId')
       .populate('owner')
       .populate('updater')
-      .sort({ createdAt: 'desc', _id: 'desc' })
+      .sort(sorter)
       .skip(skipIndex)
       .limit(size);
     const total = await this.fishFarmerModel.countDocuments(query);

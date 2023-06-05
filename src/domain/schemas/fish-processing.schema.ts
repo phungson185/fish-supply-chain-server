@@ -83,6 +83,10 @@ export class FishProcessing {
   @AutoMap()
   @Prop({ default: false })
   listing: boolean;
+
+  @AutoMap()
+  @Prop()
+  qrCode: string;
 }
 
 export const FishProcessingSchema =
