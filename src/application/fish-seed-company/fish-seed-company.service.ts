@@ -1,13 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { FilterQuery, Model, PipelineStage, Types } from 'mongoose';
 import { BaseQueryParams, BaseResult, PaginationDto } from 'src/domain/dtos';
 import {
   BatchDocument,
   Batchs,
   FarmedFishDocument,
   FarmedFishs,
+  FishFarmerDocument,
+  FishFarmers,
   FishSeed,
   FishSeedDocument,
   Log,
@@ -24,7 +26,11 @@ import {
 } from './dtos';
 import { BatchDto } from './dtos/batch.dto';
 import { TransactionType } from 'src/domain/enum/transactionType';
-import { LogType } from 'src/domain/enum';
+import {
+  GeographicOrigin,
+  LogType,
+  MethodOfReproduction,
+} from 'src/domain/enum';
 import { compareObjects, noCompareKeys } from 'src/utils/utils';
 import * as qrcode from 'qrcode';
 import { AppConfiguration, InjectAppConfig } from 'src/config/configuration';
@@ -39,6 +45,8 @@ export class FishSeedCompanyService {
     private readonly batchModel: Model<BatchDocument>,
     @InjectModel(FishSeed.name)
     private readonly fishSeedModel: Model<FishSeedDocument>,
+    @InjectModel(FishFarmers.name)
+    private readonly fishFarmerModel: Model<FishFarmerDocument>,
     @InjectModel(Log.name)
     private readonly logModel: Model<LogDocument>,
     @InjectModel(Users.name)
@@ -86,6 +94,9 @@ export class FishSeedCompanyService {
 
     result.data = await this.farmedFishModel.create({
       ...farmedFishContractDto,
+      fishSeedId: fishSeed._id,
+      numberOfFishSeedsOrdered:
+        farmedFishContractDto.numberOfFishSeedsAvailable,
     });
 
     return result;
@@ -242,6 +253,7 @@ export class FishSeedCompanyService {
 
     result.data = await this.fishSeedModel.create({
       ...addFishSeedDto,
+      owner: userId,
     });
 
     const { oldData, newData } = compareObjects({}, addFishSeedDto);
@@ -393,6 +405,137 @@ export class FishSeedCompanyService {
         upsert: true,
       },
     );
+
+    return result;
+  }
+
+  async summaryCommon(userId: string) {
+    const result = new BaseResult();
+
+    const totalFarmedFish = await this.farmedFishModel
+      .find({
+        owner: userId,
+      })
+      .countDocuments();
+
+    const totalFishSeed = await this.fishSeedModel
+      .find({
+        owner: userId,
+      })
+      .countDocuments();
+    const totalOrder = await this.fishFarmerModel
+      .find({
+        fishSeedsSeller: userId,
+      })
+      .countDocuments();
+
+    const topFarmedFish = await this.farmedFishModel.aggregate([
+      {
+        $lookup: {
+          from: 'fish-farmers', // Assuming the collection name for FishFarmers is 'fish-farmers'
+          localField: '_id',
+          foreignField: 'farmedFishId',
+          as: 'orders',
+        },
+      },
+      {
+        $addFields: {
+          orderCount: { $size: '$orders' },
+        },
+      },
+      {
+        $sort: { orderCount: -1 },
+      },
+      {
+        $project: {
+          _id: 0,
+          speciesName: 1,
+          orderCount: 1,
+        },
+      },
+    ]);
+
+    result.data = {
+      totalFarmedFish,
+      totalFishSeed,
+      totalOrder,
+      topFarmedFish,
+    };
+
+    return result;
+  }
+
+  async summaryMostOrder(
+    userId: string,
+    geographicOrigin: number,
+    methodOfReproduction: number,
+  ) {
+    const result = new BaseResult();
+    let filter = [
+      {
+        $lookup: {
+          from: 'fish-seeds',
+          localField: 'fishSeedId',
+          foreignField: '_id',
+          as: 'fishSeed',
+        },
+      },
+      {
+        $match: {
+          owner: new Types.ObjectId(userId),
+        },
+      },
+      { $unwind: '$fishSeed' },
+    ] as PipelineStage[];
+
+    if (Object.values(GeographicOrigin).includes(geographicOrigin)) {
+      filter.push({
+        $match: {
+          'fishSeed.geographicOrigin': geographicOrigin,
+        },
+      });
+    }
+
+    if (Object.values(MethodOfReproduction).includes(methodOfReproduction)) {
+      filter.push({
+        $match: {
+          'fishSeed.methodOfReproduction': methodOfReproduction,
+        },
+      });
+    }
+
+    filter = [
+      ...filter,
+      {
+        $addFields: {
+          quantity: '$fishSeed.quantity',
+          numberOfFishSeedsOrdered: '$numberOfFishSeedsOrdered',
+          speciesName: '$fishSeed.speciesName',
+        },
+      },
+      {
+        $group: {
+          _id: '$fishSeed._id',
+          quantity: { $first: '$quantity' },
+          speciesName: { $first: '$fishSeed.speciesName' },
+          numberOfFishSeedsOrdered: { $sum: '$numberOfFishSeedsOrdered' },
+        },
+      },
+      {
+        $sort: { quantity: -1 },
+      },
+      {
+        $project: {
+          _id: 0,
+          quantity: 1,
+          numberOfFishSeedsOrdered: 1,
+          speciesName: 1,
+        },
+      },
+    ];
+
+    const topWithFilter = await this.farmedFishModel.aggregate(filter);
+    result.data = topWithFilter;
 
     return result;
   }

@@ -385,19 +385,16 @@ export class FishProcessorService {
       fishProcessorId,
       isHavePackets,
       listing,
+      dateFilter,
+      fromDate,
+      toDate,
     } = queries;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<FishProcessingDocument> = {};
-    // if (search) {
-    //   query.$or = [
-    //     {
-    //       fishSeedsPurchaser: { $regex: search, $options: 'i' },
-    //     },
-    //     {
-    //       fishSeedsSeller: { $regex: search, $options: 'i' },
-    //     },
-    //   ];
-    // }
+
+    if (search) {
+      query.$or = [{ processedSpeciesName: { $regex: search, $options: 'i' } }];
+    }
 
     if (fishProcessorId) {
       query.fishProcessorId = fishProcessorId;
@@ -417,6 +414,17 @@ export class FishProcessorService {
 
     if (listing !== undefined) {
       query.listing = listing;
+    }
+
+    if (dateFilter) {
+      if (!fromDate || !toDate) {
+        throw new BadRequestException('From date and to date are required');
+      }
+
+      query[dateFilter] = {
+        $gte: fromDate,
+        $lte: toDate,
+      };
     }
 
     let sorter = {};

@@ -4,6 +4,7 @@ import * as mongoose from 'mongoose';
 import { Document } from 'mongoose';
 import { Users } from './user.schema';
 import { GeographicOrigin, MethodOfReproduction } from '../enum';
+import { FishSeed } from './fish-seed.schema';
 
 export type FarmedFishDocument = FarmedFishs & Document;
 
@@ -34,6 +35,10 @@ export class FarmedFishs {
   farmedFishContract: string;
 
   @AutoMap()
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'FishSeed' })
+  fishSeedId: FishSeed;
+
+  @AutoMap()
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Users' })
   owner: Users;
 
@@ -48,6 +53,10 @@ export class FarmedFishs {
   @AutoMap()
   @Prop()
   numberOfFishSeedsAvailable: number;
+
+  @AutoMap()
+  @Prop()
+  numberOfFishSeedsOrdered: number;
 
   @AutoMap()
   @Prop()

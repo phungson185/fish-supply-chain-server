@@ -12,7 +12,7 @@ import {
   UseGuards,
   Patch,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { BaseQueryParams } from 'src/domain/dtos';
 import { RoleType } from 'src/domain/enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -163,6 +163,39 @@ export class FishSeedCompanyController {
         id,
         addFishSeedDto,
         req.user._id,
+      );
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.FishSeedCompany)
+  @Get('summaryCommon')
+  public async GetSummaryCommon(@Res() res, @Req() req) {
+    try {
+      const result = await this.fishSeedCompanyService.summaryCommon(
+        req.user._id,
+      );
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.FishSeedCompany)
+  @Get('summaryMostOrder/:geographicOrigin/:methodOfReproduction')
+  public async GetSummary(
+    @Res() res,
+    @Req() req,
+    @Param('geographicOrigin') geographicOrigin?: number,
+    @Param('methodOfReproduction') methodOfReproduction?: number,
+  ) {
+    try {
+      const result = await this.fishSeedCompanyService.summaryMostOrder(
+        req.user._id,
+        geographicOrigin,
+        methodOfReproduction,
       );
       return res.status(HttpStatus.OK).json(result);
     } catch (error) {

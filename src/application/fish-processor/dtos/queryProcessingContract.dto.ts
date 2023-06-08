@@ -16,4 +16,13 @@ export class QueryProcessingContractDto extends BaseQueryParams {
 
   @ApiProperty()
   listing?: boolean;
+
+  @ApiProperty()
+  dateFilter: string;
+
+  @ApiProperty()
+  fromDate?: number;
+
+  @ApiProperty()
+  toDate?: number;
 }
