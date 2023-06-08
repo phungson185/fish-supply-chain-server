@@ -99,4 +99,35 @@ export class FishFarmerController {
       return res.status(HttpStatus.BAD_REQUEST).json(error);
     }
   }
+
+  @Roles(RoleType.FishFarmer)
+  @Get('summaryCommon')
+  public async GetSummaryCommon(@Res() res, @Req() req) {
+    try {
+      const result = await this.fishFarmerService.summaryCommon(req.user._id);
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.FishFarmer)
+  @Get('summaryMostOrder/:geographicOrigin/:methodOfReproduction')
+  public async GetSummary(
+    @Res() res,
+    @Req() req,
+    @Param('geographicOrigin') geographicOrigin?: number,
+    @Param('methodOfReproduction') methodOfReproduction?: number,
+  ) {
+    try {
+      const result = await this.fishFarmerService.summaryMostOrder(
+        req.user._id,
+        geographicOrigin,
+        methodOfReproduction,
+      );
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
 }

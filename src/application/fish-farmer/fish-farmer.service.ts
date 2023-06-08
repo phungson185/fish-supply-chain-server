@@ -4,11 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { FilterQuery, Model, PipelineStage, Types } from 'mongoose';
 import { BaseResult, PaginationDto } from 'src/domain/dtos';
 import {
   BatchType,
+  GeographicOrigin,
   LogType,
+  MethodOfReproduction,
   ProcessStatus,
   TransactionType,
 } from 'src/domain/enum';
@@ -19,6 +21,8 @@ import {
   FarmedFishs,
   FishFarmerDocument,
   FishFarmers,
+  FishProcessorDocument,
+  FishProcessors,
   Log,
   LogDocument,
   UserDocument,
@@ -43,6 +47,8 @@ export class FishFarmerService {
     private readonly farmedFishModel: Model<FarmedFishDocument>,
     @InjectModel(Users.name)
     private readonly userModel: Model<UserDocument>,
+    @InjectModel(FishProcessors.name)
+    private readonly fishProcessorModel: Model<FishProcessorDocument>,
     @InjectModel(Batchs.name)
     private readonly batchModel: Model<BatchDocument>,
     @InjectModel(Log.name)
@@ -380,6 +386,153 @@ export class FishFarmerService {
         { new: true },
       );
     }
+
+    return result;
+  }
+
+  async summaryCommon(userId: string) {
+    const result = new BaseResult();
+
+    const totalOrderToFishSeedCompany = await this.fishFarmerModel
+      .find({
+        owner: userId,
+      })
+      .countDocuments();
+
+    const totalOrderFromFishProcessor = await this.fishProcessorModel
+      .find({
+        farmedFishSeller: userId,
+      })
+      .countDocuments();
+
+    const averageFishWeight = await this.fishFarmerModel.aggregate([
+      {
+        $match: {
+          owner: new Types.ObjectId(userId),
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          averageFishWeight: { $avg: '$fishWeight' },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          averageFishWeight: 1,
+        },
+      },
+    ]);
+
+    const quantityOfOrdersForFishGrowth = await this.fishFarmerModel.aggregate([
+      {
+        $lookup: {
+          from: 'fish-processors',
+          localField: '_id',
+          foreignField: 'fishFarmerId',
+          as: 'orders',
+        },
+      },
+      {
+        $addFields: {
+          orderCount: { $size: '$orders' },
+        },
+      },
+      {
+        $sort: { orderCount: -1 },
+      },
+      {
+        $project: {
+          _id: 0,
+          speciesName: 1,
+          orderCount: 1,
+        },
+      },
+    ]);
+
+    result.data = {
+      totalOrderToFishSeedCompany,
+      totalOrderFromFishProcessor,
+      averageFishWeight: averageFishWeight[0]?.averageFishWeight || 0,
+      quantityOfOrdersForFishGrowth,
+    };
+
+    return result;
+  }
+
+  async summaryMostOrder(
+    userId: string,
+    geographicOrigin: number,
+    methodOfReproduction: number,
+  ) {
+    const result = new BaseResult();
+    let filter = [
+      {
+        $lookup: {
+          from: 'fish-farmers',
+          localField: 'fishFarmerId',
+          foreignField: '_id',
+          as: 'fishFarmer',
+        },
+      },
+      {
+        $match: {
+          farmedFishSeller: new Types.ObjectId(userId),
+        },
+      },
+      { $unwind: '$fishFarmer' },
+    ] as PipelineStage[];
+
+    if (Object.values(GeographicOrigin).includes(geographicOrigin)) {
+      filter.push({
+        $match: {
+          'fishFarmer.geographicOrigin': geographicOrigin,
+        },
+      });
+    }
+
+    if (Object.values(MethodOfReproduction).includes(methodOfReproduction)) {
+      filter.push({
+        $match: {
+          'fishFarmer.methodOfReproduction': methodOfReproduction,
+        },
+      });
+    }
+
+    filter = [
+      ...filter,
+      {
+        $addFields: {
+          numberOfFishSeedsOrdered: '$fishFarmer.numberOfFishSeedsOrdered',
+          speciesName: '$fishFarmer.speciesName',
+          numberOfFishOrdered: '$numberOfFishOrdered',
+        },
+      },
+      {
+        $group: {
+          _id: '$fishFarmer._id',
+          numberOfFishSeedsOrdered: { $first: '$numberOfFishSeedsOrdered' },
+          speciesName: { $first: '$fishFarmer.speciesName' },
+          numberOfFishOrdered: { $sum: '$numberOfFishOrdered' },
+        },
+      },
+      {
+        $sort: { quantity: -1 },
+      },
+      {
+        $project: {
+          _id: 0,
+          numberOfFishSeedsOrdered: 1,
+          numberOfFishOrdered: 1,
+          speciesName: 1,
+        },
+      },
+    ];
+
+    const topWithFilter = await this.fishProcessorModel.aggregate(filter);
+
+    result.data = topWithFilter;
 
     return result;
   }
