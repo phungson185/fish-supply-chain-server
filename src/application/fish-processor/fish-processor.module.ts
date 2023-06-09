@@ -3,6 +3,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import {
   Batchs,
   BatchSchema,
+  Distributors,
+  DistributorSchema,
   FishFarmers,
   FishFarmerSchema,
   FishProcessing,
@@ -23,6 +25,7 @@ import { FishProcessorService } from './fish-processor.service';
       { name: FishProcessors.name, schema: FishProcessorSchema },
       { name: FishProcessing.name, schema: FishProcessingSchema },
       { name: FishFarmers.name, schema: FishFarmerSchema },
+      { name: Distributors.name, schema: DistributorSchema },
       { name: Users.name, schema: UserSchema },
       { name: Batchs.name, schema: BatchSchema },
       { name: Log.name, schema: LogSchema },

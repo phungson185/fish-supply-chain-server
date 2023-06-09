@@ -154,4 +154,17 @@ export class FishProcessorController {
       return res.status(HttpStatus.BAD_REQUEST).json(error);
     }
   }
+
+  @Roles(RoleType.FishProcessor)
+  @Get('summaryCommon')
+  public async GetSummaryCommon(@Res() res, @Req() req) {
+    try {
+      const result = await this.fishProcessorService.summaryCommon(
+        req.user._id,
+      );
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
 }

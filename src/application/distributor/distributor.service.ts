@@ -107,6 +107,9 @@ export class DistributorService {
       disable,
       listing,
       isHavePackets,
+      dateFilter,
+      fromDate,
+      toDate,
     } = queries;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<DistributorDocument> = {};
@@ -135,25 +138,58 @@ export class DistributorService {
       query.numberOfPackets = { $gt: 0 };
     }
 
-    // if (search) {
-    //   query.$or = [
-    //     {
-    //       fishSeedsPurchaser: { $regex: search, $options: 'i' },
-    //     },
-    //     {
-    //       fishSeedsSeller: { $regex: search, $options: 'i' },
-    //     },
-    //   ];
-    // }
+    if (search) {
+      query.$or = [
+        {
+          speciesName: { $regex: search, $options: 'i' },
+        },
+      ];
+    }
+
+    if (dateFilter) {
+      if (!fromDate || !toDate) {
+        throw new BadRequestException('From date and to date are required');
+      }
+
+      query[dateFilter] = {
+        $gte: fromDate,
+        $lte: toDate,
+      };
+    }
 
     let sorter = {};
     if (orderBy) {
       switch (orderBy) {
+        case 'speciesName':
+          sorter = desc
+            ? { speciesName: 'desc', _id: 'desc' }
+            : { speciesName: 'asc', _id: 'asc' };
+          break;
         case 'quantityOfFishPackageOrdered':
           sorter = desc
             ? { quantityOfFishPackageOrdered: 'desc', _id: 'desc' }
             : { quantityOfFishPackageOrdered: 'asc', _id: 'asc' };
           break;
+        case 'dateOfProcessing':
+          sorter = desc
+            ? { dateOfProcessing: 'desc', _id: 'desc' }
+            : { dateOfProcessing: 'asc', _id: 'asc' };
+        case 'dateOfExpiry':
+          sorter = desc
+            ? { dateOfExpiry: 'desc', _id: 'desc' }
+            : { dateOfExpiry: 'asc', _id: 'asc' };
+        case 'numberOfPackets':
+          sorter = desc
+            ? { numberOfPackets: 'desc', _id: 'desc' }
+            : { numberOfPackets: 'asc', _id: 'asc' };
+        case 'filletsInPacket':
+          sorter = desc
+            ? { filletsInPacket: 'desc', _id: 'desc' }
+            : { filletsInPacket: 'asc', _id: 'asc' };
+        case 'updatedAt':
+          sorter = desc
+            ? { updatedAt: 'desc', _id: 'desc' }
+            : { updatedAt: 'asc', _id: 'asc' };
         default:
           sorter = desc
             ? { createdAt: 'desc', _id: 'desc' }
@@ -168,7 +204,7 @@ export class DistributorService {
       .populate('orderer')
       .populate('receiver')
       .populate('owner')
-      .sort({ updatedAt: 'desc', _id: 'desc' })
+      .sort(sorter)
       .skip(skipIndex)
       .limit(size);
     const total = await this.distributorModel.countDocuments(query);

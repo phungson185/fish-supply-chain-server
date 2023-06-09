@@ -70,6 +70,10 @@ export class FishProcessing {
 
   @AutoMap()
   @Prop()
+  totalOfPackets: number;
+
+  @AutoMap()
+  @Prop()
   processingContract: string;
 
   @AutoMap()

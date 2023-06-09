@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { FilterQuery, Model, PipelineStage, Types } from 'mongoose';
 import { BaseQueryParams, BaseResult, PaginationDto } from 'src/domain/dtos';
 import {
   BatchType,
@@ -15,6 +15,8 @@ import {
 import {
   BatchDocument,
   Batchs,
+  DistributorDocument,
+  Distributors,
   FishFarmerDocument,
   FishFarmers,
   FishProcessing,
@@ -50,6 +52,8 @@ export class FishProcessorService {
     private readonly fishProcessorModel: Model<FishProcessorDocument>,
     @InjectModel(FishProcessing.name)
     private readonly fishProcessingModel: Model<FishProcessingDocument>,
+    @InjectModel(Distributors.name)
+    private readonly distributorModel: Model<DistributorDocument>,
     @InjectModel(Batchs.name)
     private readonly batchModel: Model<BatchDocument>,
     @InjectModel(Log.name)
@@ -276,6 +280,7 @@ export class FishProcessorService {
     const fishProcessing = await this.fishProcessingModel.create({
       ...createProcessingContractDto,
       owner: userId,
+      totalOfPackets: numberOfPackets,
     });
 
     const { oldData, newData } = compareObjects(
@@ -495,6 +500,118 @@ export class FishProcessorService {
     result.data = {
       user,
       fishProcessing,
+    };
+
+    return result;
+  }
+
+  async summaryCommon(userId: string) {
+    const result = new BaseResult();
+
+    const totalOrderToFishFarmer = await this.fishProcessorModel
+      .find({
+        owner: userId,
+      })
+      .countDocuments();
+
+    const totalOrderFromDistributor = await this.distributorModel
+      .find({
+        receiver: userId,
+      })
+      .countDocuments();
+
+    const totalContract = await this.fishProcessingModel
+      .find({
+        owner: userId,
+      })
+      .countDocuments();
+
+    const totalFish = await this.fishProcessorModel
+      .find({
+        owner: userId,
+        status: ProcessStatus.Received,
+      })
+      .countDocuments();
+
+    const numberOfProductsInStock = await this.fishProcessingModel
+      .find({
+        owner: userId,
+        status: ProcessStatus.Received,
+        disable: false,
+        listing: false,
+      })
+      .countDocuments();
+
+    const numberOfProductsListed = await this.fishProcessingModel
+      .find({
+        owner: userId,
+        status: ProcessStatus.Received,
+        disable: false,
+        listing: true,
+      })
+      .countDocuments();
+
+    const numberOfProductsExpired = await this.fishProcessingModel
+      .find({
+        owner: userId,
+        status: ProcessStatus.Received,
+        disable: true,
+      })
+      .countDocuments();
+
+    const topWithFilter = await this.distributorModel.aggregate([
+      {
+        $lookup: {
+          from: 'fish-processings',
+          localField: 'fishProcessingId',
+          foreignField: '_id',
+          as: 'fishProcessing',
+        },
+      },
+      {
+        $match: {
+          receiver: new Types.ObjectId(userId),
+          status: ProcessStatus.Received,
+          'fishProcessing.disable': false,
+        },
+      },
+      { $unwind: '$fishProcessing' },
+      {
+        $addFields: {
+          totalOfPackets: '$fishProcessing.numberOfPackets',
+          speciesName: '$fishProcessing.processedSpeciesName',
+        },
+      },
+      {
+        $group: {
+          _id: '$fishProcessing._id',
+          totalOfPackets: { $first: '$numberOfPackets' },
+          speciesName: { $first: '$fishProcessing.processedSpeciesName' },
+          totalOfSale: { $sum: '$quantityOfFishPackageOrdered' },
+        },
+      },
+      {
+        $sort: { quantity: -1 },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalOfPackets: 1,
+          totalOfSale: 1,
+          speciesName: 1,
+        },
+      },
+    ]);
+
+    result.data = {
+      totalOrderToFishFarmer,
+      totalOrderFromDistributor,
+      totalContract,
+      totalFish,
+      numberOfProductsInStock,
+      numberOfProductsListed,
+      numberOfProductsExpired,
+      topWithFilter,
     };
 
     return result;
