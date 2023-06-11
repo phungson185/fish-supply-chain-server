@@ -39,7 +39,7 @@ export class Users {
   cover: string;
 
   @AutoMap()
-  @Prop({ default: null })
+  @Prop({ default: 'Company name' })
   name: string;
 
   @AutoMap()
@@ -47,15 +47,15 @@ export class Users {
   nonce: number;
 
   @AutoMap()
-  @Prop({ default: null })
+  @Prop({ default: 'Company bio' })
   bio: string;
 
   @AutoMap()
-  @Prop({ default: null })
+  @Prop({ default: 'Company phone' })
   phone: string;
 
   @AutoMap()
-  @Prop({ default: null })
+  @Prop({ default: 'Company address' })
   userAddress: string;
 
   @AutoMap()
