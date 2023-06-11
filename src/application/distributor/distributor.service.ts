@@ -4,14 +4,11 @@ import {
   NotFoundException,
 } from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
+import * as qrcode from 'qrcode';
+import { AppConfiguration, InjectAppConfig } from 'src/config/configuration';
 import { BaseResult, PaginationDto } from 'src/domain/dtos';
-import {
-  BatchType,
-  LogType,
-  ProcessStatus,
-  TransactionType,
-} from 'src/domain/enum';
+import { LogType, ProcessStatus, TransactionType } from 'src/domain/enum';
 import {
   BatchDocument,
   Batchs,
@@ -21,6 +18,8 @@ import {
   FishProcessingDocument,
   Log,
   LogDocument,
+  RetailerDocument,
+  Retailers,
   UserDocument,
   Users,
 } from 'src/domain/schemas';
@@ -31,8 +30,6 @@ import {
   QueryOrderParams,
   UpdateOrderDto,
 } from './dtos';
-import { AppConfiguration, InjectAppConfig } from 'src/config/configuration';
-import * as qrcode from 'qrcode';
 
 @Injectable()
 export class DistributorService {
@@ -41,6 +38,8 @@ export class DistributorService {
     private readonly fishProcessingModel: Model<FishProcessingDocument>,
     @InjectModel(Distributors.name)
     private readonly distributorModel: Model<DistributorDocument>,
+    @InjectModel(Retailers.name)
+    private readonly retailerModel: Model<RetailerDocument>,
     @InjectModel(Users.name)
     private readonly userModel: Model<UserDocument>,
     @InjectModel(Batchs.name)
@@ -360,6 +359,103 @@ export class DistributorService {
     result.data = {
       user,
       distributor,
+    };
+
+    return result;
+  }
+
+  async summaryCommon(userId: string) {
+    const result = new BaseResult();
+
+    const totalOrderToFishProcessor = await this.distributorModel
+      .find({
+        owner: userId,
+      })
+      .countDocuments();
+
+    const totalOrderFromRetailer = await this.retailerModel
+      .find({
+        seller: userId,
+      })
+      .countDocuments();
+
+    const numberOfProductsInStock = await this.distributorModel
+      .find({
+        owner: userId,
+        status: ProcessStatus.Received,
+        disable: false,
+        listing: false,
+      })
+      .countDocuments();
+
+    const numberOfProductsListed = await this.distributorModel
+      .find({
+        owner: userId,
+        status: ProcessStatus.Received,
+        disable: false,
+        listing: true,
+      })
+      .countDocuments();
+
+    const numberOfProductsExpired = await this.distributorModel
+      .find({
+        owner: userId,
+        status: ProcessStatus.Received,
+        disable: true,
+      })
+      .countDocuments();
+
+    const topWithFilter = await this.retailerModel.aggregate([
+      {
+        $lookup: {
+          from: 'distributors',
+          localField: 'distributorId',
+          foreignField: '_id',
+          as: 'distributor',
+        },
+      },
+      {
+        $match: {
+          receiver: new Types.ObjectId(userId),
+          status: ProcessStatus.Received,
+          'distributor.disable': false,
+        },
+      },
+      { $unwind: '$distributor' },
+      {
+        $addFields: {
+          totalOfPackets: '$distributor.numberOfPackets',
+          speciesName: '$distributor.speciesName',
+        },
+      },
+      {
+        $group: {
+          _id: '$distributor._id',
+          totalOfPackets: { $first: '$numberOfPackets' },
+          speciesName: { $first: '$distributor.speciesName' },
+          totalOfSale: { $sum: '$numberOfFishPackagesOrdered' },
+        },
+      },
+      {
+        $sort: { quantity: -1 },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalOfPackets: 1,
+          totalOfSale: 1,
+          speciesName: 1,
+        },
+      },
+    ]);
+
+    result.data = {
+      totalOrderToFishProcessor,
+      totalOrderFromRetailer,
+      numberOfProductsInStock,
+      numberOfProductsListed,
+      numberOfProductsExpired,
+      topWithFilter,
     };
 
     return result;

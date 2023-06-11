@@ -100,19 +100,20 @@ export class RetailerService {
       isHavePackets,
       listing,
       seller,
+      dateFilter,
+      fromDate,
+      toDate,
     } = queries;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<RetailerDocument> = {};
-    // if (search) {
-    //   query.$or = [
-    //     {
-    //       fishSeedsPurchaser: { $regex: search, $options: 'i' },
-    //     },
-    //     {
-    //       fishSeedsSeller: { $regex: search, $options: 'i' },
-    //     },
-    //   ];
-    // }
+
+    if (search) {
+      query.$or = [
+        {
+          speciesName: { $regex: search, $options: 'i' },
+        },
+      ];
+    }
 
     if (status) {
       query.status = status;
@@ -138,14 +139,50 @@ export class RetailerService {
       query.numberOfPackets = { $gt: 0 };
     }
 
+    if (dateFilter) {
+      if (!fromDate || !toDate) {
+        throw new BadRequestException('From date and to date are required');
+      }
+
+      query[dateFilter] = {
+        $gte: fromDate,
+        $lte: toDate,
+      };
+    }
+
     let sorter = {};
     if (orderBy) {
       switch (orderBy) {
+        case 'speciesName':
+          sorter = desc
+            ? { speciesName: 'desc', _id: 'desc' }
+            : { speciesName: 'asc', _id: 'asc' };
+          break;
         case 'numberOfFishPackagesOrdered':
           sorter = desc
             ? { numberOfFishPackagesOrdered: 'desc', _id: 'desc' }
             : { numberOfFishPackagesOrdered: 'asc', _id: 'asc' };
           break;
+        case 'dateOfProcessing':
+          sorter = desc
+            ? { dateOfProcessing: 'desc', _id: 'desc' }
+            : { dateOfProcessing: 'asc', _id: 'asc' };
+        case 'dateOfExpiry':
+          sorter = desc
+            ? { dateOfExpiry: 'desc', _id: 'desc' }
+            : { dateOfExpiry: 'asc', _id: 'asc' };
+        case 'numberOfPackets':
+          sorter = desc
+            ? { numberOfPackets: 'desc', _id: 'desc' }
+            : { numberOfPackets: 'asc', _id: 'asc' };
+        case 'filletsInPacket':
+          sorter = desc
+            ? { filletsInPacket: 'desc', _id: 'desc' }
+            : { filletsInPacket: 'asc', _id: 'asc' };
+        case 'updatedAt':
+          sorter = desc
+            ? { updatedAt: 'desc', _id: 'desc' }
+            : { updatedAt: 'asc', _id: 'asc' };
         default:
           sorter = desc
             ? { createdAt: 'desc', _id: 'desc' }
@@ -328,6 +365,72 @@ export class RetailerService {
         title: 'Update product status',
       });
     }
+
+    return result;
+  }
+
+  async summaryCommon(userId: string) {
+    const result = new BaseResult();
+
+    const totalOrderToDistributor = await this.retailerModel
+      .find({
+        owner: userId,
+      })
+      .countDocuments();
+
+    const numberOfProductsInStock = await this.retailerModel
+      .find({
+        owner: userId,
+        status: ProcessStatus.Received,
+        disable: false,
+        listing: false,
+      })
+      .countDocuments();
+
+    const numberOfProductsListed = await this.retailerModel
+      .find({
+        owner: userId,
+        status: ProcessStatus.Received,
+        disable: false,
+        listing: true,
+      })
+      .countDocuments();
+
+    const numberOfProductsExpired = await this.retailerModel
+      .find({
+        owner: userId,
+        status: ProcessStatus.Received,
+        disable: true,
+      })
+      .countDocuments();
+
+    result.data = {
+      totalOrderToDistributor,
+      numberOfProductsInStock,
+      numberOfProductsListed,
+      numberOfProductsExpired,
+    };
+
+    return result;
+  }
+
+  async updateNumberOfProduct(orderId: string, quantity: number) {
+    const result = new BaseResult();
+
+    const retailer = await this.retailerModel.findById(orderId);
+    if (!retailer) {
+      throw new NotFoundException('Product not found');
+    }
+
+    result.data = await this.retailerModel.findByIdAndUpdate(
+      orderId,
+      {
+        $set: {
+          numberOfPackets: quantity,
+        },
+      },
+      { new: true },
+    );
 
     return result;
   }

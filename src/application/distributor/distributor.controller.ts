@@ -3,16 +3,15 @@ import {
   Controller,
   Get,
   HttpStatus,
+  Param,
   Post,
+  Put,
   Query,
+  Req,
   Res,
   UseGuards,
-  Param,
-  Put,
-  Req,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { BaseQueryParams } from 'src/domain/dtos';
 import { RoleType } from 'src/domain/enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/role.decorator';
@@ -101,6 +100,17 @@ export class DistributorController {
       const result = await this.distributorSerive.getProfileInventory(
         id ?? req.user.id,
       );
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.Distributor)
+  @Get('summaryCommon')
+  public async GetSummaryCommon(@Res() res, @Req() req) {
+    try {
+      const result = await this.distributorSerive.summaryCommon(req.user._id);
       return res.status(HttpStatus.OK).json(result);
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json(error);

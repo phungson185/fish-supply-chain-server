@@ -19,4 +19,13 @@ export class QueryOrderParams extends BaseQueryParams {
 
   @ApiProperty()
   isHavePackets: boolean;
+
+  @ApiProperty()
+  dateFilter: string;
+
+  @ApiProperty()
+  fromDate?: number;
+
+  @ApiProperty()
+  toDate?: number;
 }

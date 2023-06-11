@@ -4,14 +4,11 @@ import {
   NotFoundException,
 } from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, PipelineStage, Types } from 'mongoose';
-import { BaseQueryParams, BaseResult, PaginationDto } from 'src/domain/dtos';
-import {
-  BatchType,
-  LogType,
-  ProcessStatus,
-  TransactionType,
-} from 'src/domain/enum';
+import { FilterQuery, Model, Types } from 'mongoose';
+import * as qrcode from 'qrcode';
+import { AppConfiguration, InjectAppConfig } from 'src/config/configuration';
+import { BaseResult, PaginationDto } from 'src/domain/dtos';
+import { LogType, ProcessStatus, TransactionType } from 'src/domain/enum';
 import {
   BatchDocument,
   Batchs,
@@ -21,7 +18,6 @@ import {
   FishFarmers,
   FishProcessing,
   FishProcessingDocument,
-  FishProcessingSchema,
   FishProcessorDocument,
   FishProcessors,
   Log,
@@ -29,6 +25,7 @@ import {
   UserDocument,
   Users,
 } from 'src/domain/schemas';
+import { compareObjects, noCompareKeys } from 'src/utils/utils';
 import {
   ConfirmOrderDto,
   CreateProcessingContractDto,
@@ -37,9 +34,6 @@ import {
   QueryProcessingContractDto,
   UpdateProcessingContractDto,
 } from './dtos';
-import { compareObjects, noCompareKeys } from 'src/utils/utils';
-import { AppConfiguration, InjectAppConfig } from 'src/config/configuration';
-import * as qrcode from 'qrcode';
 
 @Injectable()
 export class FishProcessorService {

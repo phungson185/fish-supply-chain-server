@@ -21,6 +21,7 @@ import {
   OrderDto,
   QueryOrderParams,
   UpdateOrderDto,
+  UpdateNumberOfProductDto,
 } from './dtos';
 import { RetailerService } from './retailer.service';
 
@@ -99,6 +100,35 @@ export class RetailerController {
     try {
       const result = await this.retailerService.getProfileInventory(
         id ?? req.user.id,
+      );
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.Retailer)
+  @Get('summaryCommon')
+  public async GetSummaryCommon(@Res() res, @Req() req) {
+    try {
+      const result = await this.retailerService.summaryCommon(req.user._id);
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json(error);
+    }
+  }
+
+  @Roles(RoleType.Retailer)
+  @Get('update-number-of-product')
+  public async updateNumberOfProduct(
+    @Res() res,
+    @Req() req,
+    @Body() body: UpdateNumberOfProductDto,
+  ) {
+    try {
+      const result = await this.retailerService.updateNumberOfProduct(
+        body.userId,
+        body.quantity,
       );
       return res.status(HttpStatus.OK).json(result);
     } catch (error) {
