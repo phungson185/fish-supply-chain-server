@@ -119,7 +119,7 @@ export class RetailerController {
   }
 
   @Roles(RoleType.Retailer)
-  @Get('update-number-of-product')
+  @Put('update-number-of-product')
   public async updateNumberOfProduct(
     @Res() res,
     @Req() req,
@@ -127,7 +127,7 @@ export class RetailerController {
   ) {
     try {
       const result = await this.retailerService.updateNumberOfProduct(
-        body.userId,
+        body.orderId,
         body.quantity,
       );
       return res.status(HttpStatus.OK).json(result);

@@ -17,7 +17,6 @@ export class BatchService {
     const { search, page, size, orderBy, desc, batchStep, batchType } = queries;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<BatchDocument> = {};
-    console.log(batchStep, batchType);
     if (batchType === 0) {
       query.lastChainPoint = { $exists: true };
     } else if (batchType === 1) {
@@ -39,8 +38,6 @@ export class BatchService {
     } else if (batchStep === 5) {
       query.lastChainPoint = 'retailerId';
     }
-
-    console.log(query);
 
     const items = await this.batchModel
       .find(query)

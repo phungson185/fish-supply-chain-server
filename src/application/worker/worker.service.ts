@@ -34,6 +34,7 @@ export class WorkerService {
 
       for (const contract of fishProcessingContracts) {
         contract.disable = true;
+        contract.listing = false;
         await contract.save();
       }
 
@@ -49,6 +50,7 @@ export class WorkerService {
       }
       console.log('End update status fish processing contract');
 
+      // Update status distributor
       console.log('Start update status distributor');
       const distributors = await this.distributorModel.find({
         dateOfExpiry: { $lt: currentDate },
@@ -56,6 +58,7 @@ export class WorkerService {
 
       for (const distributor of distributors) {
         distributor.disable = true;
+        distributor.listing = false;
         await distributor.save();
       }
 
@@ -68,6 +71,28 @@ export class WorkerService {
         await distributor.save();
       }
       console.log('End update status distributor');
+
+      // Update status retailer
+      console.log('Start update status retailer');
+      const retailers = await this.retailerModel.find({
+        dateOfExpiry: { $lt: currentDate },
+      });
+
+      for (const retailer of retailers) {
+        retailer.disable = true;
+        retailer.listing = false;
+        await retailer.save();
+      }
+
+      const activeRetailers = await this.retailerModel.find({
+        dateOfExpiry: { $gte: currentDate },
+      });
+
+      for (const retailer of activeRetailers) {
+        retailer.disable = false;
+        await retailer.save();
+      }
+      console.log('End update status retailer');
     } catch (error) {
       console.log(error);
     }

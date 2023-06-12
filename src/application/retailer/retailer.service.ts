@@ -422,11 +422,16 @@ export class RetailerService {
       throw new NotFoundException('Product not found');
     }
 
+    let disable = quantity === 0;
+    let listing = quantity > 0;
+
     result.data = await this.retailerModel.findByIdAndUpdate(
       orderId,
       {
         $set: {
           numberOfPackets: quantity,
+          disable,
+          listing,
         },
       },
       { new: true },
