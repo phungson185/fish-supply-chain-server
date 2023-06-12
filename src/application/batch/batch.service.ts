@@ -14,56 +14,34 @@ export class BatchService {
 
   async getBatchs(queries: BatchQueryDto) {
     const result = new BaseResult();
-    const { search, page, size, orderBy, desc, type } = queries;
+    const { search, page, size, orderBy, desc, batchStep, batchType } = queries;
     const skipIndex = size * (page - 1);
     const query: FilterQuery<BatchDocument> = {};
-    // if (search) {
-    //   query.$or = [
-    //     {
-    //       farmedFishContract: { $regex: search, $options: 'i' },
-    //     },
-    //     {
-    //       speciesName: { $regex: search, $options: 'i' },
-    //     },
-    //     {
-    //       geographicOrigin: { $regex: search, $options: 'i' },
-    //     },
-    //     {
-    //       aquacultureWaterType: { $regex: search, $options: 'i' },
-    //     },
-    //   ];
-    // }
+    console.log(batchStep, batchType);
+    if (batchType === 0) {
+      query.lastChainPoint = { $exists: true };
+    } else if (batchType === 1) {
+      query.lastChainPoint = { $in: ['farmedFishId', 'fishFarmerId'] };
+    } else if (batchType === 2) {
+      query.lastChainPoint = {
+        $in: ['fishProcessingId', 'distributorId', 'retailerId'],
+      };
+    }
 
-    let sorter = {};
-    // if (orderBy) {
-    //   switch (orderBy) {
-    //     case 'speciesName':
-    //       sorter = desc
-    //         ? { speciesName: 'desc', _id: 'desc' }
-    //         : { speciesName: 'asc', _id: 'asc' };
-    //       break;
-    //     case 'geographicOrigin':
-    //       sorter = desc
-    //         ? { geographicOrigin: 'desc', _id: 'desc' }
-    //         : { geographicOrigin: 'asc', _id: 'asc' };
-    //       break;
-    //     case 'numberOfFishSeedsAvailable':
-    //       sorter = desc
-    //         ? { numberOfFishSeedsAvailable: 'desc', _id: 'desc' }
-    //         : { numberOfFishSeedsAvailable: 'asc', _id: 'asc' };
-    //       break;
-    //     case 'aquacultureWaterType':
-    //       sorter = desc
-    //         ? { aquacultureWaterType: 'desc', _id: 'desc' }
-    //         : { aquacultureWaterType: 'asc', _id: 'asc' };
-    //       break;
-    //     default:
-    //       sorter = desc
-    //         ? { createdAt: 'desc', _id: 'desc' }
-    //         : { createdAt: 'asc', _id: 'asc' };
-    //       break;
-    //   }
-    // }
+    if (batchStep === 1) {
+      query.lastChainPoint = 'farmedFishId';
+    } else if (batchStep === 2) {
+      query.lastChainPoint = 'fishFarmerId';
+    } else if (batchStep === 3) {
+      query.lastChainPoint = 'fishProcessingId';
+    } else if (batchStep === 4) {
+      query.lastChainPoint = 'distributorId';
+    } else if (batchStep === 5) {
+      query.lastChainPoint = 'retailerId';
+    }
+
+    console.log(query);
+
     const items = await this.batchModel
       .find(query)
       .populate({
@@ -122,7 +100,8 @@ export class BatchService {
           },
         ],
       })
-      .sort(sorter)
+      .find({})
+      .sort({ updatedAt: 'desc', _id: 'desc' })
       .skip(skipIndex)
       .limit(size);
     const total = await this.batchModel.countDocuments(query);
