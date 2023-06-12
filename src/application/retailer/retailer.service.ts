@@ -110,6 +110,7 @@ export class RetailerService {
     if (search) {
       query.$or = [
         {
+          _id: { $regex: search, $options: 'i' },
           speciesName: { $regex: search, $options: 'i' },
         },
       ];
