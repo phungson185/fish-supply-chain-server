@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import mongoose, { FilterQuery, Model } from 'mongoose';
 import { BaseResult, PaginationDto } from 'src/domain/dtos';
 import {
   BatchType,
@@ -108,10 +108,16 @@ export class RetailerService {
     const query: FilterQuery<RetailerDocument> = {};
 
     if (search) {
+      const searchObjectId = mongoose.Types.ObjectId.isValid(search)
+        ? new mongoose.Types.ObjectId(search)
+        : null;
+      console.log(search);
       query.$or = [
         {
-          _id: { $regex: search, $options: 'i' },
           speciesName: { $regex: search, $options: 'i' },
+        },
+        {
+          _id: searchObjectId,
         },
       ];
     }
