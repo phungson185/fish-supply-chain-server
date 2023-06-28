@@ -111,7 +111,6 @@ export class RetailerService {
       const searchObjectId = mongoose.Types.ObjectId.isValid(search)
         ? new mongoose.Types.ObjectId(search)
         : null;
-      console.log(search);
       query.$or = [
         {
           speciesName: { $regex: search, $options: 'i' },
