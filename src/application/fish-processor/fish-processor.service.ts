@@ -579,7 +579,7 @@ export class FishProcessorService {
       {
         $group: {
           _id: '$fishProcessing._id',
-          totalOfPackets: { $first: '$numberOfPackets' },
+          totalOfPackets: { $first: '$fishProcessing.totalOfPackets' },
           speciesName: { $first: '$fishProcessing.processedSpeciesName' },
           totalOfSale: { $sum: '$quantityOfFishPackageOrdered' },
         },

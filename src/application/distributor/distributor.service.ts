@@ -416,7 +416,7 @@ export class DistributorService {
       },
       {
         $match: {
-          receiver: new Types.ObjectId(userId),
+          seller: new Types.ObjectId(userId),
           status: ProcessStatus.Received,
           'distributor.disable': false,
         },
@@ -431,7 +431,9 @@ export class DistributorService {
       {
         $group: {
           _id: '$distributor._id',
-          totalOfPackets: { $first: '$numberOfPackets' },
+          totalOfPackets: {
+            $first: '$distributor.quantityOfFishPackageOrdered',
+          },
           speciesName: { $first: '$distributor.speciesName' },
           totalOfSale: { $sum: '$numberOfFishPackagesOrdered' },
         },
