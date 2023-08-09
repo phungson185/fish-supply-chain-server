@@ -97,6 +97,10 @@ export class Retailers {
   @AutoMap()
   @Prop()
   transactionHash: string;
+
+  @AutoMap()
+  @Prop()
+  qrCode: string;
 }
 
 export const RetailerSchema = SchemaFactory.createForClass(Retailers);

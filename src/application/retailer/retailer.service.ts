@@ -206,6 +206,9 @@ export class RetailerService {
         path: 'distributorId',
         populate: {
           path: 'fishProcessingId',
+          populate: {
+            path: 'fishProcessor',
+          },
         },
       })
       .sort({ updatedAt: 'desc', _id: 'desc' })
@@ -254,7 +257,7 @@ export class RetailerService {
       throw new BadRequestException('The shipment has not arrived yet');
     }
 
-    if (status == ProcessStatus.Received) {
+    if (status == ProcessStatus.Accepted) {
       const batch = await this.batchModel.create({
         farmedFishId:
           retailer.distributorId.fishProcessingId.fishProcessorId.fishFarmerId
@@ -278,6 +281,16 @@ export class RetailerService {
       );
 
       batch.qrCode = qrCodeString;
+
+      await this.retailerModel.findByIdAndUpdate(
+        orderId,
+        {
+          $set: {
+            qrCode: qrCodeString,
+          },
+        },
+        { new: true },
+      );
       await batch.save();
     }
 
